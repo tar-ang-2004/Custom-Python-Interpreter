@@ -1,0 +1,4387 @@
+/* ============================================
+    poontHER - Advanced Styles
+   Modern Python Interpreter with Professional UI
+   ============================================ */
+
+/* CSS Variables for Theming */
+:root {
+    /* Dark Theme Colors */
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #252526;
+    --bg-tertiary: #2d2d30;
+    --bg-elevated: #3e3e42;
+    
+    --text-primary: #cccccc;
+    --text-secondary: #858585;
+    --text-tertiary: #6a6a6a;
+    
+    --accent-primary: #007acc;
+    --accent-hover: #005a9e;
+    --accent-success: #4ec9b0;
+    /* Use the user-selected theme accent for toggles; fallback to purple */
+    --toggle-on: var(--theme-accent, #7c3aed);
+    --accent-warning: #dcdcaa;
+    --accent-error: #f48771;
+    --accent-info: #9cdcfe;
+    
+    --border-color: #3e3e42;
+    --border-active: #007acc;
+    
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.4);
+    
+    --font-mono: 'Fira Code', 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    /* Interface font (selectable by user). Default falls back to system sans */
+    --font-ui: var(--font-sans);
+    --font-ui-size: 14px;
+    
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+
+    /* Global divider width - set to 1px per user request */
+    --divider-width: 1px;
+}
+
+/* Brand name per-letter jingle animation */
+.brand-name {
+    display: inline-block;
+    cursor: default;
+    -webkit-font-smoothing: antialiased;
+}
+.brand-name .letter {
+    display: inline-block;
+    transform-origin: 50% 70%;
+    will-change: transform, opacity;
+    transition: transform 220ms ease, opacity 220ms ease;
+}
+
+/* Continuous bounce animation for each letter. Each letter may use a
+   different --bounce amplitude (px) but the same speed. The animation loops
+   forever. */
+
+@keyframes bounceY {
+    /* Smooth up and down movement using translate3d for GPU acceleration */
+    0%   { transform: translate3d(0, 0, 0); }
+    18%  { transform: translate3d(0, calc(var(--bounce, 8px) * -1), 0); }
+    36%  { transform: translate3d(0, 0, 0); }
+    54%  { transform: translate3d(0, calc(var(--bounce, 8px) * 1), 0); }
+    72%  { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(0, 0, 0); }
+}
+
+.brand-name .letter {
+    display: inline-block;
+    transform-origin: 50% 50%;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    /* Keep a consistent duration; smoothing via easing curve */
+    animation-name: bounceY;
+    animation-duration: 900ms;
+    animation-timing-function: cubic-bezier(0.22, 0.9, 0.3, 1);
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+}
+
+/* Slightly reduce visual jitter on font rendering */
+.brand-name .letter { -webkit-font-smoothing: antialiased; }
+
+/* When JS takes over animation, disable CSS animations to avoid conflicts */
+.brand-name.js-bounce .letter {
+    animation: none !important;
+}
+
+/* Ensure letters are rendered on their own layer for smoother transforms */
+.brand-name .letter {
+    transform: translate3d(0,0,0);
+    will-change: transform, opacity;
+    -webkit-transform: translate3d(0,0,0);
+}
+
+/* Respect reduced-motion preference by disabling continuous animation */
+@media (prefers-reduced-motion: reduce) {
+    .brand-name .letter {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* Respect reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    .brand-name .letter,
+    .brand-name.jingle .letter {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* --- Normalize border widths globally to the user-selected divider width --- */
+/* Use high-specificity app-scoped selectors so these rules override earlier ones. */
+#app, #app * {
+    box-sizing: border-box;
+}
+
+/* Force all border sides to use the divider width while preserving color/style.
+   This targets explicit pixel widths (most of the codebase uses px values). */
+#app * {
+    border-left-width: var(--divider-width) !important;
+    border-right-width: var(--divider-width) !important;
+    border-top-width: var(--divider-width) !important;
+    border-bottom-width: var(--divider-width) !important;
+}
+
+/* Specific common structural elements: ensure their borders are the divider width. */
+#app .tab-bar,
+#app .left-panel,
+#app .right-panel,
+#app .panel-header,
+#app .tab,
+#app .output-container,
+#app .variables-container,
+#app .repl-wrapper,
+#app .history-sidebar,
+#app .modal-content,
+#app .toast,
+#app .status-bar {
+    border-width: var(--divider-width) !important;
+}
+
+/* Remove the light-mode vertical seam by making CodeMirror gutters blend with panel bg. */
+[data-theme="light"] #app .CodeMirror-gutters {
+    background: var(--bg-secondary) !important;
+    border-right: var(--divider-width) solid var(--bg-secondary) !important;
+}
+
+/* Also ensure split.js gutter matches panel background */
+#app .gutter {
+    background: var(--bg-secondary) !important;
+}
+
+/* Fullscreen panel state toggled by hold-and-shake gesture on header */
+/* When a panel is fullscreen we want it to fully cover the app's content area
+   (between the top navbar and bottom status bar). Remove rounded corners and
+   internal padding so the underlying UI cannot peek through. */
+.panel-fullscreen {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 56px !important;    /* top navbar height */
+    bottom: 36px !important; /* bottom status bar height */
+    z-index: 99999 !important;
+    background: var(--bg-primary) !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    transition: none !important;
+}
+
+.panel-fullscreen .panel-header {
+    cursor: grab;
+    position: relative; /* allow absolute-positioned actions */
+}
+
+/* Ensure the editor/terminal fill the remaining overlay area below the header */
+.panel-fullscreen .CodeMirror,
+.panel-fullscreen .xterm,
+.panel-fullscreen .repl-wrapper {
+    height: calc(100% - var(--header-height, 42px)) !important; /* leave space for header */
+}
+
+/* Reposition header action buttons when panel is fullscreen so they float on top
+   instead of shifting layout. Keep the title readable. */
+.panel-fullscreen .panel-actions {
+    position: absolute !important;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    gap: 8px;
+}
+
+.panel-fullscreen .panel-title {
+    padding-right: 220px; /* reserve space for absolute actions */
+}
+
+/* Visually hide other panels and gutters while a panel is fullscreen to avoid
+   any overlapping content showing through. Use visibility so layout doesn't
+   collapse and we can restore quickly. */
+.panel-fullscreen-active .main-container > .gutter {
+    visibility: hidden;
+}
+
+/* Additionally hide any other gutter elements (nested) while fullscreen is active */
+.panel-fullscreen-active .gutter,
+.panel-fullscreen-active .gutter.gutter-horizontal,
+.panel-fullscreen-active .gutter.gutter-vertical {
+    visibility: hidden !important;
+}
+
+
+/* Light Theme */
+[data-theme="light"] {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f3f3f3;
+    --bg-tertiary: #e8e8e8;
+    --bg-elevated: #ffffff;
+    
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-tertiary: #999999;
+    
+    --border-color: #d4d4d4;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Global Resets */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-sans);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ============================================
+   Top Navigation Bar
+   ============================================ */
+.top-navbar {
+    background: var(--theme-secondary, var(--bg-secondary));
+    border-bottom: none;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    height: 56px;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+    gap: 12px;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+/* Center area - takes remaining space and centers its content */
+.nav-center {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* center must be interactive for the search input */
+    pointer-events: auto;
+}
+
+.nav-center .nav-center-content {
+    pointer-events: auto; /* allow interactions for content placed here */
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 14px;
+    opacity: 0.95;
+}
+
+/* Centered pill search in top navbar - compact dark pill style */
+.nav-search-center {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    /* Accent-tinted frosted glass: translucent accent background using the theme accent */
+    /* Use color-mix to blend the --theme-accent into translucent stops so the pill follows the app accent color */
+    background: linear-gradient(90deg,
+        color-mix(in srgb, var(--theme-accent) 16%, transparent),
+        color-mix(in srgb, var(--theme-accent) 10%, transparent)
+    );
+    padding: 6px 14px;
+    height: 36px;
+    border-radius: 999px;
+    min-width: 360px;
+    max-width: 640px;
+    width: 48%;
+    backdrop-filter: blur(8px) saturate(120%);
+    -webkit-backdrop-filter: blur(8px) saturate(120%);
+    color: rgba(255,255,255,0.95); /* text color for contrast */
+}
+.nav .nav-search-center { display: none; } /* hide any nav-embedded search to avoid duplicates */
+
+/* Global centered search container placed over the main content area */
+.global-search-center {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 11px; /* place just below the navbar */
+    width: 60%;
+    max-width: 500px;
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    pointer-events: none; /* allow inner search to receive events */
+}
+.global-search-center .nav-search-center { pointer-events: auto; width: 100%; }
+.nav-search-center {
+    will-change: transform, box-shadow;
+    transition: transform 240ms cubic-bezier(.2,.9,.3,1), box-shadow 240ms cubic-bezier(.2,.9,.3,1), border-color 220ms ease;
+}
+
+.nav-search-center:focus-within {
+    transform: translateY(-4px) translateZ(0);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.5);
+    border-color: rgba(255,255,255,0.16);
+}
+
+.nav-search-center:active {
+    transform: translateY(-2px) translateZ(0);
+}
+.nav-search-icon {
+    color: var(--theme-accent, var(--accent-primary)); /* accent color */
+    font-size: 16px;
+    opacity: 0.98;
+    margin-left: 6px;
+}
+.center-search-input {
+    flex: 1 1 auto;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none;
+    outline: none;
+    box-shadow: none !important;
+    -webkit-appearance: none;
+    appearance: none;
+    color: inherit; /* match pill's text color */
+    font-size: 14px;
+    padding: 4px 6px;
+}
+.center-search-input::placeholder { color: rgba(255,255,255,0.6); }
+.center-search-clear { display: none !important; }
+.center-search-results {
+    position: absolute;
+    top: calc(100% + 10px); /* below the nav */
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(640px, 86%);
+    max-height: 360px;
+    overflow: auto;
+    background: var(--bg-primary);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 10px;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+    z-index: 14000;
+    display: none;
+}
+.center-search-results.active { display:block; }
+.center-search-results .result-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+    color: var(--text-primary);
+    cursor:pointer;
+    background: transparent;
+}
+.center-search-results .result-item:hover { background: rgba(255,255,255,0.02); }
+
+.brand-icon {
+    font-size: 24px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Modern filename popover (appears near status bar filename on double-click) */
+.filename-popover {
+    position: fixed;
+    z-index: 24000;
+    min-width: 220px;
+    max-width: 420px;
+    background: linear-gradient(180deg, rgba(20,20,20,0.62), rgba(20,20,20,0.48));
+    backdrop-filter: blur(12px) saturate(125%);
+    -webkit-backdrop-filter: blur(12px) saturate(125%);
+    border-radius: 14px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    color: var(--text-primary);
+    transform-origin: top center;
+    animation: popIn 180ms cubic-bezier(.16,.8,.24,1);
+}
+
+.filename-popover .fp-input {
+    flex: 1 1 auto;
+    padding: 8px 10px;
+    border-radius: 10px;
+    color: inherit;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    outline: none;
+}
+
+.filename-popover .fp-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.fp-btn {
+    border: none;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+}
+.fp-btn.fp-confirm { background: color-mix(in srgb, var(--theme-accent) 70%, transparent); color: #fff; }
+.fp-btn.fp-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.04); color: var(--text-secondary); }
+
+/* Circular icon buttons for filename popover */
+.fp-icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.36);
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.fp-icon-btn:focus { outline: 2px solid color-mix(in srgb, var(--theme-accent) 30%, transparent); }
+.fp-icon-btn.fp-close { background: #ff6b6b; color: #fff; }
+.fp-icon-btn.fp-ok { background: #3cb371; color: #fff; }
+
+.fp-actions { gap: 6px; }
+
+/* Enforce permanent red/green for filename popover buttons (highest specificity) */
+.filename-popover .fp-icon-btn.fp-close {
+    background-color: #e74c3c !important; /* strong red */
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 6px 14px rgba(231,76,60,0.28) !important;
+}
+.filename-popover .fp-icon-btn.fp-ok {
+    background-color: #28a745 !important; /* bootstrap-style green */
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 6px 14px rgba(40,167,69,0.28) !important;
+}
+.filename-popover .fp-icon-btn i {
+    color: #ffffff !important;
+}
+.filename-popover .fp-icon-btn.fp-close:hover {
+    background-color: #c0392b !important;
+    box-shadow: 0 8px 20px rgba(192,57,43,0.30) !important;
+    transform: translateY(-1px);
+}
+.filename-popover .fp-icon-btn.fp-ok:hover {
+    background-color: #218838 !important;
+    box-shadow: 0 8px 20px rgba(33,136,56,0.30) !important;
+    transform: translateY(-1px);
+}
+
+/* Accessibility: ensure focus ring is visible and matches color tone */
+.filename-popover .fp-icon-btn:focus {
+    outline: 3px solid color-mix(in srgb, #ffffff 12%, var(--theme-accent, #007acc) 0%);
+    outline-offset: 2px;
+}
+
+/* Inline status-bar filename editor (replaces floating popover) */
+.status-filename-editor {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px; /* further tighten gap so buttons hug the filename */
+    background: transparent;
+    padding: 0; /* minimal padding to keep it compact */
+    border-radius: 4px;
+    border: none;
+    line-height: 1;
+}
+.status-filename-editor .status-filename-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px; /* smaller font for compactness */
+    padding: 0 4px; /* minimal horizontal padding */
+    width: auto; /* autosize to content */
+    display: inline-block;
+    white-space: nowrap; /* prevent wrapping so width matches content */
+    min-width: 3ch; /* avoid collapsing to zero; small default */
+    max-width: 15ch; /* keep a sensible upper bound if needed */
+}
+.status-filename-editor .status-filename-actions { display: inline-flex; gap: 2px; align-items: center; margin-left: 2px; }
+.status-filename-editor .fp-icon-btn { width: 18px; height: 18px; font-size: 10px; padding: 0; box-shadow: none; }
+.status-filename-editor .fp-icon-btn i { color: #fff !important; font-size: 10px; }
+.status-filename-editor .fp-icon-btn { border-radius: 50%; }
+
+/* Ensure in light theme the inline editor keeps readable surface */
+[data-theme="light"] .status-filename-editor {
+    background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.94));
+    border: 1px solid rgba(0,0,0,0.06);
+    color: var(--text-primary);
+}
+
+/* Smooth appearing animation for inline editor */
+.status-filename-editor { animation: statusEditorIn 160ms cubic-bezier(.16,.8,.24,1); }
+@keyframes statusEditorIn { from { opacity: 0; transform: translateY(4px) scale(0.995); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+@keyframes popIn {
+    0% { opacity: 0; transform: scale(0.98) translateY(-6px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Small caret to visually anchor the popover to the filename */
+.filename-popover::after {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 20px;
+    width: 14px;
+    height: 14px;
+    transform: rotate(45deg);
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    border-left: 1px solid rgba(255,255,255,0.04);
+    border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .filename-popover { animation: none !important; }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.brand-name {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.nav-controls {
+    display: flex;
+    gap: 8px;
+    flex: 0 0 auto;
+    margin-left: auto; /* ensure controls are at right */
+}
+
+/* Segmented pill-style toolbar (sketch: rounded capsule with emphasized center button) */
+.nav-controls.pill-group {
+    background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+    border-radius: 999px;
+    padding: 6px; /* inner spacing around the group */
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    box-shadow: none;
+}
+
+.nav-controls .nav-btn {
+    background: var(--panel-bg);
+    color: var(--text-primary);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    line-height: 1;
+    transition: all var(--transition-fast);
+    min-width: auto;
+    text-align: center;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Emphasize the middle (Load) button. We assume it's the 3rd child; adjust nth-child if markup changes */
+.nav-controls .nav-btn:nth-child(3) {
+    background: var(--panel-bg);
+    color: var(--text-primary);
+    border: none;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Hover states: subtle inner accent for non-emphasized buttons */
+.nav-controls .nav-btn:hover {
+    background: var(--bg-elevated);
+    border-color: var(--theme-accent, var(--accent-primary));
+    transform: translateY(-1px);
+}
+
+/* Focus / active outlines for accessibility */
+.nav-controls.pill-group .nav-btn:focus {
+    outline: 2px solid rgba(0,0,0,0.12);
+    outline-offset: 2px;
+}
+
+/* Small-screen fallback: allow wrapping and smaller paddings */
+@media (max-width: 640px) {
+    .nav-controls.pill-group {
+        padding: 4px;
+        gap: 4px;
+    }
+    .nav-controls.pill-group .nav-btn { padding: 6px 10px; min-width: 56px; font-size: 12px; }
+
+/* Glassmorphism: enable by adding .glassmorphism-enabled to documentElement */
+.glassmorphism-enabled .nav-controls .nav-btn,
+.glassmorphism-enabled .nav-btn {
+    /* translucent surface that lets the backdrop blur through */
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.06);
+    color: var(--text-primary);
+    backdrop-filter: blur(8px) saturate(120%);
+    -webkit-backdrop-filter: blur(8px) saturate(120%);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+    position: relative;
+    overflow: hidden; /* keep pseudo-elements contained */
+}
+
+.glassmorphism-enabled .nav-controls .nav-btn::after,
+.glassmorphism-enabled .nav-btn::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    /* subtle glossy highlight */
+    background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+    mix-blend-mode: overlay;
+    pointer-events: none;
+}
+
+/* Accent-aware variant for the theme-toggle and other accent buttons */
+.glassmorphism-enabled .theme-toggle,
+.glassmorphism-enabled .nav-controls .nav-btn.accent,
+.glassmorphism-enabled .nav-btn.accent {
+    /* Use the theme accent as base color but keep translucency for glass feel */
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.04));
+    border: 1px solid rgba(255,255,255,0.06);
+    /* layered accent glow using box-shadow so we don't require RGB split vars */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.45), 0 0 0 4px rgba(255,255,255,0.02) inset;
+}
+
+.glassmorphism-enabled .nav-controls.pill-group {
+    background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+    border: 1px solid rgba(255,255,255,0.04);
+    backdrop-filter: blur(6px) saturate(120%);
+}
+
+.glassmorphism-enabled .nav-controls .nav-btn:hover,
+.glassmorphism-enabled .nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(0,0,0,0.5);
+}
+
+.glassmorphism-enabled .nav-controls .nav-btn:focus,
+.glassmorphism-enabled .nav-btn:focus {
+    outline: 2px solid rgba(255,255,255,0.06);
+    outline-offset: 2px;
+}
+    .nav-controls.pill-group .nav-btn:nth-child(3) { transform: none; box-shadow: none; }
+}
+
+.nav-btn {
+    background: var(--panel-bg);
+    color: var(--text-primary);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    line-height: 1;
+    transition: all var(--transition-fast);
+}
+
+.nav-btn:hover {
+    background: var(--bg-elevated);
+    border-color: var(--theme-accent, var(--accent-primary));
+    transform: translateY(-1px);
+}
+
+/* Apply glassmorphism to primary interactive buttons across the UI */
+.nav-icon-btn, .nav-btn, .icon-btn, .btn, .btn-primary, .btn-secondary {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03));
+    border: 1px solid rgba(255,255,255,0.04);
+    backdrop-filter: blur(6px) saturate(120%);
+    -webkit-backdrop-filter: blur(6px) saturate(120%);
+    transition: transform 180ms cubic-bezier(.2,.9,.3,1), box-shadow 180ms ease, background 180ms ease;
+}
+
+.nav-icon-btn:hover, .icon-btn:hover, .btn:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,0.45); }
+
+/* Allow opting out of the glass look for specific controls */
+.no-glass { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: transparent !important; }
+
+/* Drag-and-drop styles for panels */
+.split-panel.dragging {
+    opacity: 0.7;
+    transform: scale(0.995);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    border-color: var(--accent-primary);
+}
+
+/* Visual hint when another panel is a valid drop target */
+.split-panel.drop-target {
+    outline: 2px dashed var(--accent-primary);
+    outline-offset: -6px;
+}
+
+/* Temporary placeholder shown during drag to indicate swap position */
+.panel-placeholder {
+    border: 2px dashed rgba(255,255,255,0.06);
+    background: linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.nav-btn:active {
+    transform: translateY(0);
+}
+
+.theme-toggle {
+    background: var(--theme-accent, var(--accent-primary));
+    color: var(--text-primary);
+    border: none;
+}
+
+.theme-toggle:hover {
+    background: var(--accent-hover, var(--theme-accent));
+}
+
+/* ============================================
+   Main Split Container
+   ============================================ */
+.main-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    /* Navbar 56px, status bar 36px -> reserve space and add padding so fixed bar doesn't overlap content */
+    height: calc(100vh - 56px - 36px);
+    padding-bottom: 36px; /* match .status-bar height below */
+}
+
+.split-panel {
+    /* Use the actual navbar and status bar heights to compute available area.
+        Navbar is 56px, status bar is 36px (defined below). This keeps panels
+        consistent across layout changes and avoids off-by-a-few-pixels issues
+        that cause headers to visually misalign. */
+    height: calc(100vh - 56px - 36px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.left-panel {
+    position: relative;
+    background: var(--panel-bg, var(--bg-secondary));
+    border-right: var(--divider-width) solid var(--border-color);
+}
+
+/* Folder sidebar styles (created by loadFolder) */
+#folderSidebar {
+    display: flex;
+    flex-direction: column;
+    width: 320px;
+    min-width: 220px;
+    max-width: 420px;
+    background: var(--panel-bg);
+    border-left: var(--divider-width) solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    padding: 10px 10px;
+    overflow: auto;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+#folderSidebar .folder-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 6px;
+    border-bottom: var(--divider-width) solid var(--border-color);
+}
+
+#folderSidebar .folder-sidebar-header .btn {
+    padding: 6px 8px;
+    font-size: 12px;
+}
+
+.folder-tree-root {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.folder-node {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: background var(--transition-fast), transform var(--transition-fast);
+}
+.folder-node:hover { background: var(--bg-elevated); transform: translateY(-1px); }
+
+.folder-node i.fas.fa-folder { /* color assigned per-folder via JS */ min-width:18px; }
+
+/* '+' quick-create button next to folders */
+
+.folder-add-btn {
+    background: transparent; /* remove orange bg */
+    border: none;
+    color: var(--text-secondary);
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+.folder-add-btn:hover { background: rgba(255,255,255,0.02); color: var(--text-primary); }
+
+.folder-add-dd { box-shadow: var(--shadow-md); }
+.folder-add-dd .folder-add-opt { padding: 6px 8px; }
+.folder-add-dd .folder-add-opt:hover { background: var(--bg-elevated); }
+
+.folder-children { margin-left: 8px; padding-left: 8px; border-left: 1px dashed var(--border-color); }
+
+.folder-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+.folder-file:hover { background: rgba(0,0,0,0.03); }
+
+.folder-file .btn-link { color: var(--accent-primary); font-size: 13px; padding: 4px 6px; }
+.folder-file .btn-link:hover { text-decoration: underline; }
+
+.folder-hint { color: var(--text-tertiary); padding-top: 8px; }
+
+/* Compact small buttons used in the folder sidebar */
+.btn-sm { padding: 4px 8px; font-size: 12px; border-radius: 6px; }
+.btn-ghost { background: transparent; border: 1px solid transparent; }
+.btn-link { background: transparent; border: none; cursor: pointer; }
+
+/* Responsive: collapse sidebar on narrow screens */
+@media (max-width: 900px) {
+    #folderSidebar { display: none; }
+}
+
+/* New dedicated folder panel (inserted as a left column before the main leftPanel)
+   This panel is created dynamically by JS and is visible only when a folder is loaded.
+*/
+#folderPanel, .folder-panel {
+    display: block;
+    width: 300px;
+    min-width: 220px;
+    max-width: 420px;
+    box-sizing: border-box;
+    border-right: var(--divider-width) solid var(--border-color);
+    background: var(--panel-bg);
+    padding: 8px 10px;
+    overflow: auto;
+}
+
+#folderPanel .folder-header {
+    margin-bottom: 8px;
+}
+
+/* Keep folder node/file styles matching existing sidebar styles */
+.folder-node { padding-left: 6px; }
+.folder-node > .folder-label { cursor: pointer; user-select: none; }
+.folder-children { margin-left: 10px; border-left: 1px dashed transparent; padding-left: 6px; }
+.folder-file { padding: 4px 6px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.folder-file:hover { background: rgba(0,0,0,0.03); }
+
+/* Folder name styling: use theme accent and bold for strong affordance */
+.folder-name {
+    color: var(--theme-accent, var(--accent-primary));
+    font-weight: 700;
+}
+.folder-node:hover .folder-name { text-decoration: none; }
+
+/* Small count badge shown next to folder names indicating number of files inside (including nested) */
+.folder-count {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 6px;
+    background: rgba(0,0,0,0.12);
+    color: var(--text-primary);
+    font-size: 12px;
+    border-radius: 999px;
+    vertical-align: middle;
+}
+
+/* Responsive: hide panel on very small screens to avoid layout break */
+@media (max-width: 800px) {
+    #folderPanel { display: none; }
+}
+
+.right-panel {
+    background: var(--panel-bg, var(--bg-primary));
+    display: flex;
+    flex-direction: column;
+}
+
+.gutter {
+    background: var(--border-color);
+    cursor: col-resize;
+    transition: background var(--transition-fast);
+}
+
+.gutter:hover {
+    background: var(--theme-accent, var(--accent-primary));
+}
+
+/* Ensure the horizontal gutter (vertical divider) stretches vertically
+   so the blue divider line reaches the fixed status bar at the bottom.
+   This only affects the gutter element itself. */
+.gutter.gutter-horizontal, .gutter-horizontal {
+    align-self: stretch !important;
+    height: 100% !important;
+    min-height: calc(100vh - 36px) !important; /* reserve status bar */
+}
+
+/* ============================================
+   Panel Headers
+   ============================================ */
+.panel-header {
+    background: var(--theme-tertiary, var(--bg-tertiary));
+    border-bottom: var(--divider-width) solid var(--border-color);
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Force consistent height and box-sizing so different panels render on
+       the same baseline. This prevents one header from appearing slightly
+       lower due to font or padding differences. */
+    min-height: 42px;
+    height: 42px;
+    box-sizing: border-box;
+    line-height: 1;
+}
+
+/* Fix: ensure output and variables panel headers have a visible divider in light theme
+   The generic --border-color can be too subtle against the panel background in light mode,
+   so provide a slightly darker color for these specific headers. */
+[data-theme="light"] .output-container .panel-header,
+[data-theme="light"] .variables-container .panel-header,
+[data-theme="light"] .repl-wrapper .panel-header {
+    border-bottom: 1px solid var(--border-color); /* match editor header border color */
+}
+
+.panel-title {
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+}
+
+.panel-title i,
+.panel-title span {
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.panel-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* ============================================
+   Code Editor
+   ============================================ */
+.editor-wrapper {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Tab Bar (multi-file tabs above the editor) */
+.tab-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: var(--bg-primary);
+    border-bottom: none; /* flat look - no underline */
+    /* remove left/right separators for flat header */
+    border-left: none;
+    border-right: none;
+}
+
+/* When in REPL mode, hide the editor tab-bar (no files to show) to remove empty spacer */
+body.repl-mode .tab-bar {
+    height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border-bottom-width: 0 !important;
+    overflow: hidden;
+    transition: height 260ms cubic-bezier(.2,.9,.2,1), padding 220ms ease, border-bottom-width 220ms ease;
+}
+
+.tabs-wrapper {
+    flex: 1 1 auto;
+    min-width: 0; /* allow child to shrink for overflow */
+    position: relative;
+}
+.tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    /* Ensure the inner tabs area doesn't collapse against the editor - provide internal padding */
+    padding-left: 6px;
+    padding-right: 6px;
+    /* make tabs sit below the controls visually when scrolled under */
+    z-index: 1;
+}
+
+.tab-controls {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    margin-left: 0; /* remove extra margin so gap equals .panel-actions gap */
+    z-index: 10; /* above the scrolling tab row */
+}
+
+/* Hide the horizontal scrollbar for the tabs while keeping scroll functionality
+   so we can implement wheel-to-scroll behavior instead of a visible slider. */
+.tabs::-webkit-scrollbar {
+    height: 0px; /* hide horizontal scrollbar in WebKit browsers */
+}
+.tabs {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
+}
+.tabs::-webkit-overflow-scroller {
+    -webkit-overflow-scrolling: touch;
+}
+.tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: none; /* remove tab border for flat look */
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.tab.active {
+    background: var(--accent-primary) !important;
+    color: white !important;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+.tab .tab-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: white !important;
+}
+
+/* Tab icon (Python logo) shown before filenames */
+.tab .tab-icon {
+    margin-right: 8px;
+    font-size: 16px; /* slightly smaller than tab text */
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    /* Force white icon color for dark theme and consistent tab appearance */
+    color: #ffffff !important;
+}
+
+/* Ensure tab-name truncation accounts for the icon */
+.tabs .tab .tab-name {
+    display: inline-block;
+    vertical-align: middle;
+    max-width: calc(100% - 28px); /* leave room for icon + actions */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tab .tab-actions {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+}
+.tab .tab-actions i { font-size: 12px; color: white !important; }
+
+.tab[draggable="true"] { user-select: none; }
+.tab.dragging { opacity: 0.5; transform: scale(0.98); }
+.tab:hover { transform: translateY(-1px); }
+
+/* Uniform tab sizing
+   Make all tabs the same fixed width. The JS will set --tab-width
+   to match the width of the default "untitled.py" tab after render.
+   Fallback to 160px when JS hasn't run. The tab name will truncate
+   with an ellipsis when too long, and actions remain visible. */
+.tabs .tab {
+    flex: 0 0 var(--tab-width, 160px);
+    width: var(--tab-width, 160px);
+    box-sizing: border-box;
+}
+
+.tab .tab-name {
+    display: inline-block;
+    flex: 1 1 auto;
+    min-width: 0; /* allow truncation inside flex */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tab .tab-actions {
+    flex: 0 0 auto;
+}
+
+
+
+.CodeMirror {
+    height: 100%;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Make the code editor area borderless and clean across all themes */
+.code-editor,
+.CodeMirror,
+textarea#codeEditor,
+.CodeMirror-scroll,
+.CodeMirror-sizer {
+    background: var(--panel-bg) !important;
+    color: var(--theme-text) !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Remove visible separator from gutters */
+.CodeMirror-gutters,
+.CodeMirror-gutter {
+    background: transparent !important;
+    border-right: none !important;
+}
+
+/* Line highlights and active line should not show outlines */
+.CodeMirror .CodeMirror-activeline,
+.CodeMirror .CodeMirror-activeline-background {
+    background: transparent !important;
+}
+
+/* Hide default editor focus ring */
+.CodeMirror-focused textarea:focus,
+.CodeMirror textarea:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.CodeMirror-linenumber {
+    color: var(--text-tertiary);
+}
+
+.CodeMirror-cursor {
+    border-left: 2px solid var(--accent-primary);
+}
+
+/* ============================================
+   Mode Switcher
+   ============================================ */
+.mode-switcher {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 12px;
+    padding: 4px 12px;
+    background: var(--bg-primary);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.mode-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.mode-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 22px;
+}
+
+.mode-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.mode-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    transition: var(--transition-fast);
+    border-radius: 22px;
+}
+
+.mode-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background: var(--accent-primary);
+    transition: var(--transition-fast);
+    border-radius: 50%;
+}
+
+.mode-toggle input:checked + .mode-slider {
+    background: var(--toggle-on) !important;
+    border-color: var(--toggle-on) !important;
+}
+
+/* Ensure the knob stays white (override theme variables) */
+.mode-toggle input:checked + .mode-slider:before {
+    transform: translateX(22px);
+    background: white !important;
+}
+
+/* ============================================
+   REPL Mode
+   ============================================ */
+.repl-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-secondary);
+    overflow: hidden;
+}
+
+.repl-output {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.repl-line {
+    margin: 4px 0;
+    padding: 4px 0;
+}
+
+.repl-input-line {
+    color: var(--accent-info);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.repl-output-line {
+    color: var(--accent-success);
+    margin-left: 32px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.repl-error-line {
+    color: var(--accent-error);
+    background: rgba(244, 135, 113, 0.1);
+    padding: 8px;
+    border-radius: 4px;
+    border-left: 3px solid var(--accent-error);
+    margin: 8px 0;
+    margin-left: 32px;
+}
+
+.repl-result-line {
+    color: var(--accent-warning);
+    margin-left: 32px;
+}
+
+.repl-input-container {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-tertiary);
+    border-top: 1px solid var(--border-color);
+}
+
+.repl-prompt {
+    color: var(--accent-primary);
+    font-family: var(--font-mono);
+    font-weight: bold;
+    font-size: 14px;
+    margin-right: 8px;
+    user-select: none;
+}
+
+.repl-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    outline: none;
+    padding: 4px;
+}
+
+.repl-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+.icon-btn {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    line-height: 1;
+    transition: all var(--transition-fast);
+    /* Use the user-selected interface font and size */
+    font-family: var(--font-ui, var(--font-sans));
+    font-size: var(--font-ui-size, 13px);
+}
+
+.icon-btn:hover {
+    /* remove background color change here; overlay handles accent effect */
+    background: transparent;
+    color: var(--accent-primary) !important;
+    border-color: var(--accent-primary);
+}
+
+/* Ensure icons inside buttons also adopt the accent color on hover/focus */
+.icon-btn:hover i,
+.icon-btn:focus i,
+.icon-btn:focus,
+.icon-btn:active i {
+    color: var(--accent-primary) !important;
+}
+
+/* Apply same accent-color-on-hover behavior across other common button types */
+.nav-btn:hover,
+.nav-btn:focus,
+.btn:hover,
+.btn:focus {
+    color: var(--accent-primary) !important;
+}
+.nav-btn:hover i,
+.nav-btn:focus i,
+.btn:hover i,
+.btn:focus i {
+    color: var(--accent-primary) !important;
+}
+
+/* Run button uses green background by default; still change its icon/text to accent on hover if desired */
+.run-btn:hover,
+.run-btn:focus {
+    color: var(--accent-primary) !important;
+}
+.run-btn:hover i,
+.run-btn:focus i {
+    color: var(--accent-primary) !important;
+}
+
+/* ===== New: remove hover translate/shadow and add accent overlay ===== */
+/* Prevent translate/box-shadow on hover for primary button families */
+.icon-btn:hover,
+.nav-btn:hover,
+.btn:hover,
+.run-btn:hover,
+.icon-btn:active,
+.nav-btn:active,
+.btn:active,
+.run-btn:active {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Make buttons layering predictable for overlay */
+.icon-btn,
+.nav-btn,
+.btn,
+.run-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Ensure button contents are above the overlay */
+.icon-btn > *,
+.nav-btn > *,
+.btn > *,
+.run-btn > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Accent overlay: visible by default, fades away on hover */
+/* Two-layer overlay to create edge->center and center->edge fade sequencing */
+/* CSS variables for easy tuning */
+:root {
+    --btn-overlay-edge-opacity: 0.08;   /* default edge tint */
+    --btn-overlay-center-opacity: 0.12; /* center tint shown on hover */
+    --btn-overlay-duration: 220ms;
+    --btn-overlay-delay: 120ms; /* sequencing delay */
+}
+
+/* ::before = edge/full overlay, ::after = centered radial overlay */
+.icon-btn::before,
+.nav-btn::before,
+.btn::before,
+.run-btn::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    background: var(--accent-primary);
+    opacity: var(--btn-overlay-edge-opacity);
+    transition: opacity var(--btn-overlay-duration) ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.icon-btn::after,
+.nav-btn::after,
+.btn::after,
+.run-btn::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    background: radial-gradient(circle at center, rgba(0,0,0,0) 30%, var(--accent-primary) 100%);
+    /* center gradient color will be tinted by opacity
+       we use background with accent color and control visibility with opacity */
+    opacity: 0;
+    transition: opacity var(--btn-overlay-duration) ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Base transition-delay (when leaving hover) : center disappears immediately, edges reappear after delay */
+.icon-btn::before,
+.nav-btn::before,
+.btn::before,
+.run-btn::before { transition-delay: var(--btn-overlay-delay); }
+.icon-btn::after,
+.nav-btn::after,
+.btn::after,
+.run-btn::after { transition-delay: 0ms; }
+
+/* On hover: edges fade out immediately, center fades in after a short delay -> gives edges->center feel */
+.icon-btn:hover::before,
+.nav-btn:hover::before,
+.btn:hover::before,
+.run-btn:hover::before { opacity: 0; transition-delay: 0ms; }
+.icon-btn:hover::after,
+.nav-btn:hover::after,
+.btn:hover::after,
+.run-btn:hover::after { opacity: var(--btn-overlay-center-opacity); transition-delay: var(--btn-overlay-delay); }
+
+/* Focus state slightly shows center for keyboard users */
+.icon-btn:focus::after,
+.nav-btn:focus::after,
+.btn:focus::after,
+.run-btn:focus::after { opacity: calc(var(--btn-overlay-center-opacity) * 0.8); transition-delay: 0ms; }
+
+.run-btn {
+    background: var(--accent-success);
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
+.run-btn:hover {
+    background: #3da88a;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+/* Accent-colored borders for all interactive buttons
+   User requested a visible accent border on all buttons.
+   This rule is placed after button definitions to ensure it overrides earlier border:none rules.
+*/
+.icon-btn,
+.nav-btn,
+.btn,
+.run-btn,
+.btn-primary,
+.btn-secondary,
+.close-btn,
+.toast-close,
+.status-bar .status-item#fileInfo .icon-btn,
+#renameFileBtn,
+.modal .close-btn {
+    border: 1px solid var(--accent-primary) !important;
+}
+
+/* Smooth animated transition for button state changes when switching modes
+   We toggle `.repl-mode` on <body> to move buttons between visible/hidden
+   states with a smooth transform + opacity transition. This avoids layout
+   jank and provides a pleasant visual cue when the app switches modes. */
+.icon-btn,
+.nav-btn,
+.btn,
+.run-btn {
+    transition: transform 260ms cubic-bezier(.2,.9,.2,1),
+                opacity 220ms ease,
+                border-color 220ms ease,
+                color 220ms ease,
+                box-shadow 220ms ease;
+    will-change: transform, opacity;
+}
+
+/* When entering REPL mode we want to subtly de-emphasize editor-only controls.
+   Instead of instantly hiding, we shrink and fade them out. The JS will add
+   the `repl-mode` class to `body` to trigger these styles. */
+body.repl-mode .tab-controls,
+body.repl-mode #newTabBtn,
+body.repl-mode #viewOutlineBtn,
+body.repl-mode #runCodeBtn,
+body.repl-mode #validateSyntaxBtn {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+    pointer-events: none; /* prevent interaction while visually hidden */
+}
+
+/* Conversely, when leaving REPL the editor controls smoothly reappear */
+body:not(.repl-mode) .tab-controls,
+body:not(.repl-mode) #newTabBtn,
+body:not(.repl-mode) #viewOutlineBtn,
+body:not(.repl-mode) #runCodeBtn,
+body:not(.repl-mode) #validateSyntaxBtn {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* Also animate the breadcrumb/file info row for REPL transitions */
+body.repl-mode #editorBreadcrumb,
+body.repl-mode #fileInfo {
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+}
+body:not(.repl-mode) #editorBreadcrumb,
+body:not(.repl-mode) #fileInfo {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* Smooth panel fade helpers for editor/repl panels */
+/* Attach .panel-fade to panels to enable smooth show/hide transitions. */
+#editorMode, #replMode {
+    transition: opacity 260ms cubic-bezier(.2,.9,.2,1), transform 260ms cubic-bezier(.2,.9,.2,1);
+    will-change: opacity, transform;
+}
+
+/* When element is set to fading-out it will animate to invisible state; after transition JS will add .hidden */
+.panel-fade.fading-out {
+    opacity: 0 !important;
+    transform: translateY(6px) scale(0.995);
+    pointer-events: none;
+}
+
+.panel-fade.fading-in {
+    opacity: 1 !important;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* Ensure initial hidden panels are fully transparent and non-interactive but keep them in the flow until JS hides them */
+.panel-fade.hidden {
+    opacity: 0;
+    transform: translateY(6px) scale(0.995);
+    pointer-events: none;
+}
+
+
+
+
+/* ============================================
+   Output Console
+   ============================================ */
+.output-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.variables-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid var(--border-color);
+}
+
+.output-console {
+    flex: 1;
+    background: var(--bg-secondary);
+     /* Remove top padding so output is flush under the panel header. */
+     padding: 0 16px 16px 16px;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    scroll-behavior: smooth;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    position: relative;
+    /* Ensure content starts at the top and doesn't get vertically centered
+       when font sizes change. Use flex column so children stack predictably. */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+/* Wrapper for each logical output line (prefix + text) */
+.output-line-wrapper {
+    /* Use block layout so lines flow naturally from the top. Inline-block
+       caused vertical alignment quirks when font-size increased. */
+    display: block;
+    line-height: 1.6;
+}
+
+/* Defensive: ensure the very first child inside the output console has no
+   top margin or padding so increasing font-size cannot push content down. */
+.output-console > *:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* xterm.js Terminal Container */
+#xtermContainer {
+    flex: 1;
+    background: var(--bg-secondary);
+    padding: 16px;
+    overflow: hidden;
+}
+
+#xtermContainer .xterm {
+    height: 100%;
+    width: 100%;
+}
+
+#xtermContainer .xterm-viewport {
+    background-color: transparent !important;
+}
+
+#xtermContainer .xterm-screen {
+    background-color: transparent !important;
+}
+
+.welcome-message {
+    /* Center content absolutely within the output console so it remains centered
+       even when panels are resized. The parent (.output-console) should be
+       position: relative (it already is). */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    pointer-events: none; /* allow clicks to pass through to container when nothing interactive */
+    width: 100%;
+    max-width: 720px;
+}
+
+/* Inline caret input used for inline prompts (thin, unobtrusive) */
+.inline-input-caret {
+    font-family: var(--font-mono, "Cascadia Code", Consolas, monospace);
+    font-size: 13px;
+    color: inherit;
+    caret-color: var(--accent-primary, #9cdcfe);
+    outline: none;
+    border: none;
+    background: transparent;
+}
+.inline-input-caret:empty::after {
+    /* show nothing, caret will appear at the empty position */
+    content: '';
+}
+.output-line.output-prompt .prompt-label {
+    font-weight: 600;
+    color: var(--accent-primary, #9cdcfe);
+}
+
+/* Prompt type color mappings */
+.prompt-label.prompt-int { color: #ff8c00; }    /* integer - orange */
+.prompt-label.prompt-float { color: #4f46e5; }  /* float - indigo */
+.prompt-label.prompt-str { color: #3b82f6; }    /* string - blue */
+.prompt-label.prompt-list { color: #10b981; }   /* list - green */
+.prompt-label.prompt-tuple { color: #f59e0b; }  /* tuple - yellow */
+.prompt-label.prompt-dict { color: #8b5cf6; }   /* dictionary - violet */
+.prompt-label.prompt-set { color: #ef4444; }    /* set - red */
+
+.welcome-message i {
+    font-size: 64px;
+    margin-bottom: 0;
+    color: var(--accent-primary);
+    animation: float 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.welcome-message p {
+    margin: 8px 0;
+}
+
+.welcome-message .subtitle {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+kbd {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+}
+
+/* Output Types */
+.output-line {
+    margin: 4px 0;
+    padding: 0; /* no box padding for plain text */
+    border-radius: 0;
+    animation: none; /* no background animation */
+    background: transparent;
+}
+
+.output-line span:first-child {
+    color: #6a9955; /* subtle green for prefix */
+    font-weight: 700;
+    font-family: var(--font-mono);
+    margin-right: 6px;
+}
+
+/* Prefix placeholder used for alignment. Keep width equal to prefix text. */
+.output-prefix {
+    display: inline-block;
+    /* Use relative units so the prefix scales with the output font-size.
+       `em` is relative to the element's font-size, and we explicitly inherit
+       the console font-size so changes made via the UI (consoleFontSize)
+       automatically scale this prefix. Default width tuned to hold "-->". */
+    width: 2.2em; /* scales with font-size */
+    color: #6a9955;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    font-size: inherit; /* follow the container's font-size */
+    line-height: 1; /* align prefix tightly with the text baseline */
+    vertical-align: middle;
+}
+
+/* Developer/user toggle: add `hide-output-prefix` to <body> to remove the
+   green prefix entirely (useful if you want cleaner output without the arrow) */
+body.hide-output-prefix .output-prefix {
+    display: none !important;
+}
+
+/* When prefix is hidden remove the extra right-margin on the first span so
+   lines don't keep awkward gaps. This targets the existing first-child rule
+   used for coloring the prefix text when present. */
+body.hide-output-prefix .output-line span:first-child {
+    margin-right: 0 !important;
+}
+
+/* Fix: remove extra top spacing for the first output/repl line so the first
+   visible line aligns with the container padding (prevents large top gap) */
+.output-console > .output-line:first-child,
+.output-console > .output-stdout:first-child,
+.output-console > .output-stderr:first-child,
+.repl-output > .repl-output-line:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+/* Defensive: if first child is a generic element (span, pre, br) remove extra top spacing */
+.output-console > *:first-child,
+.repl-output > *:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Hide accidental leading breaklines inserted as first child */
+.output-console > br:first-child,
+.repl-output > br:first-child {
+    display: none !important;
+}
+
+/* (removed legacy span-first-child rule to avoid layout inconsistencies)
+   Output lines now use block-level containers (.output-line) which
+   receive proper padding/margins from the .output-line rules above. */
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.output-stdout {
+    color: var(--text-primary); /* plain text color */
+    background: transparent;
+    border: none;
+}
+
+.output-stderr {
+    color: var(--text-primary); /* show as plain text for errors too */
+    background: transparent;
+    border: none;
+}
+
+.output-info {
+    color: var(--text-primary);
+    background: transparent;
+    border: none;
+}
+
+.output-warning {
+    color: var(--text-primary);
+    background: transparent;
+    border: none;
+}
+
+.output-magic {
+    color: #c586c0;
+    background: rgba(197, 134, 192, 0.1);
+    border-left: 3px solid #c586c0;
+}
+
+.traceback-container {
+    margin-top: 8px;
+}
+
+.traceback-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    transition: background var(--transition-fast);
+}
+
+.traceback-header:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.traceback-content {
+    margin-top: 8px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    font-size: 12px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-normal);
+}
+
+.traceback-content.expanded {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* ============================================
+   Interactive Input Prompt
+   ============================================ */
+.input-prompt-container {
+    position: absolute;
+    display: none;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.input-prompt-field {
+    background: transparent;
+    color: #ce9178;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    outline: none;
+    caret-color: #ce9178;
+    pointer-events: auto;
+}
+
+.input-prompt-field::placeholder {
+    color: transparent;
+}
+
+.input-prompt-field.number-input {
+    color: #ce9178; /* Orange for numbers */
+}
+
+.input-prompt-field.text-input {
+    color: #ce9178; /* Orange for strings */
+}
+
+.input-prompt-field.default-input {
+    color: #ce9178; /* Orange for default */
+}
+
+.execution-time {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--bg-primary);
+    padding: 4px 8px;
+    border-radius: 3px;
+}
+
+.output-meta {
+    margin-top: 8px;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+/* Captured figure output styling */
+.output-figure {
+    margin: 8px 0;
+    padding: 6px 0 12px 0;
+    background: transparent;
+    border: none;
+}
+.output-figure img {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    display: block;
+    max-width: 100%;
+    height: auto;
+    box-shadow: var(--shadow-sm);
+}
+.output-figure-download {
+    color: var(--text-secondary);
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: 6px;
+}
+.output-figure-download:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+/* Interactive View Panel */
+.interactive-container {
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
+    padding: 8px;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    min-height: 220px;
+    max-height: 80vh;
+    resize: vertical; /* allow user resizing */
+    overflow: auto;
+}
+.interactive-container.hidden { display: none; }
+.interactive-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.interactive-content img {
+    /* Use 90% of the interactive view area while preserving aspect ratio */
+    width: 90%;
+    height: 90%;
+    object-fit: contain; /* preserve aspect ratio and contain within area */
+    display: block;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: var(--shadow-md);
+    transition: width 160ms var(--transition-fast), height 160ms var(--transition-fast);
+}
+
+/* Ensure the interactive content keeps padding and centers the image even when resized */
+.interactive-container {
+    padding: 12px; /* slightly larger padding to allow breathing room around large images */
+}
+
+/* Switch control that appears in the Output header when interactive view is active */
+.interactive-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 8px;
+}
+.interactive-switch.hidden { display: none; }
+.interactive-switch .icon-btn.small {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+.interactive-switch .switch-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    opacity: 0.8;
+}
+
+/* Pill toggle (Output / InView) */
+.pill-toggle {
+    display: inline-flex;
+    align-items: center;
+    background: var(--bg-tertiary);
+    border: 1px solid rgba(255,255,255,0.04);
+    padding: 6px;
+    border-radius: 999px;
+    gap: 8px;
+    position: relative;
+}
+.pill-toggle .pill-label {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 6px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px;
+}
+.pill-toggle .pill-label[aria-pressed="true"] {
+    color: var(--text-primary);
+}
+.pill-knob {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #5a7df6; /* blue knob */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    transition: transform 220ms ease;
+    position: absolute;
+    left: 6px;
+}
+.pill-toggle[data-state="inview"] .pill-knob {
+    transform: translateX(56px); /* shift to right label - tuned to control width */
+}
+
+/* ============================================
+   Variable Explorer
+   ============================================ */
+.variables-content {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+    background: var(--bg-secondary);
+    font-size: 12px;
+}
+
+/* When a panel becomes fullscreen, ensure the Variables Explorer
+   fills the available space below its header. Use flex layout and
+   min-height:0 so children can shrink correctly and scrolling works. */
+.panel-fullscreen .variables-container,
+.panel-fullscreen .output-container,
+.panel-fullscreen .repl-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+
+.panel-fullscreen .variables-container > .panel-header,
+.panel-fullscreen .output-container > .panel-header,
+.panel-fullscreen .repl-wrapper > .panel-header {
+    flex: 0 0 var(--header-height, 42px) !important;
+}
+
+.panel-fullscreen .variables-content {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-y: auto !important;
+}
+
+.variable-item {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+    transition: all var(--transition-fast);
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.variable-item:hover {
+    border-color: var(--accent-primary);
+    transform: translateX(4px);
+}
+
+.variable-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.variable-name {
+    font-weight: 600;
+    font-family: var(--font-mono);
+    color: var(--accent-info);
+}
+
+.variable-type {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    background: var(--bg-primary);
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.variable-value {
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+    word-break: break-all;
+    margin-top: 4px;
+}
+
+.variable-size {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 32px 20px;
+    color: var(--text-tertiary);
+    font-size: 13px;
+}
+
+/* ============================================
+   Command History Sidebar
+   ============================================ */
+.history-sidebar {
+    position: absolute;
+    right: 0;
+    top: 42px;
+    bottom: 0;
+    width: 300px;
+    background: var(--bg-tertiary);
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(0);
+    transition: transform var(--transition-normal);
+    z-index: 10;
+}
+
+.history-sidebar.collapsed {
+    transform: translateX(100%);
+}
+
+.sidebar-header {
+    padding: 12px;
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.history-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.history-item {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: 12px;
+}
+
+.history-item:hover {
+    border-color: var(--accent-primary);
+    transform: translateX(-4px);
+}
+
+.history-item.success {
+    border-left: 3px solid var(--accent-success);
+}
+
+.history-item.error {
+    border-left: 3px solid var(--accent-error);
+}
+
+.history-code {
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.history-time {
+    font-size: 10px;
+    color: var(--text-tertiary);
+}
+
+.status-bar {
+    /* Strong, consistent fixed-bottom status bar to visually cover any bottom seams
+       and ensure it stays above other UI layers. Use !important sparingly but here
+       it's intentional to prevent theme overrides from breaking the layout. */
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 32px !important; /* slightly larger to ensure full coverage */
+    min-height: 32px !important;
+    padding: 0 14px !important;
+    background: var(--bg-primary) !important; /* match main background to cover underlying strip */
+    border-top: none !important;
+    z-index: 99999 !important; /* keep on top of most UI layers */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-family: var(--font-ui, var(--font-mono));
+    color: var(--text-secondary);
+    line-height: 1;
+    /* remove shadow so status-bar is flat against content */
+    box-shadow: none !important;
+}
+
+/* Groups inside status bar */
+.status-left,
+.status-center,
+.status-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 100%;
+}
+
+/* Move the center status (Ln / Col / Lines) slightly to the right side with a fixed offset
+   from the right edge so it appears closer to the status-right group. Adjust --status-center-offset
+   to change how many pixels from the right the group sits. */
+.status-center {
+    /* Pin the line/column display to a fixed bottom-center location so
+       layout changes to the status bar don't affect its position. This
+       preserves a consistent cursor indicator for users. */
+    position: fixed !important;
+     left: 50% !important;
+     /* Shift left by default so the indicator sits slightly off-center
+         Configure with --status-center-shift to adjust in px (positive values move left). */
+     transform: translateX(calc(-50% - var(--status-center-shift, 4px))) !important;
+    bottom: var(--status-center-bottom, 2px) !important; /* distance from bottom edge */
+    z-index: 100000 !important; /* sit above the status bar region */
+    display: flex !important;
+    gap: 12px !important;
+    align-items: center !important;
+    pointer-events: none !important; /* let clicks pass through the overlay normally */
+}
+
+/* Allow the individual status items inside to remain interactive */
+.status-center .status-item { pointer-events: auto !important; }
+
+/* Each item inside the bar */
+.status-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    line-height: 1; /* readable text line height */
+    height: 100%; /* allow items to fill the bar height so their contents can center */
+}
+
+/* Tighter inline select used in the status bar (encoding selector)
+   Removes extra left/right padding and ensures the native dropdown arrow
+   sits close to the selected text. Keeps transparent background so it
+   inherits status bar color. */
+.status-bar .status-item select,
+#encodingSelect {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    padding: 0 8px 0 0; /* reserve right space for arrow */
+    margin: 0;
+    font: inherit;
+    line-height: 1;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    text-align: right; /* align selected text to the right edge of the box */
+    min-width: 68px; /* consistent size so content aligns predictably */
+}
+
+/* For browsers that show their own arrow, add a small custom arrow using a background image
+   positioned tightly at the right so the arrow appears close to the label text. */
+.status-bar .status-item select.custom-arrow,
+#encodingSelect.custom-arrow {
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+                      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: right 6px center, right 10px center;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    padding-right: 16px; /* room for custom arrow */
+}
+
+/* Normalize icons so they align naturally with text (avoid manual nudges) */
+.status-item i,
+.status-count i {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1;
+    font-size: 14px;
+}
+
+/* Filename + rename button */
+.status-bar .status-item#fileInfo {
+    gap: 8px;
+}
+
+.status-bar .status-item#fileInfo #fileNameDisplay {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1;
+    margin: 0;
+    padding: 0 4px 0 0;
+}
+
+.status-bar .status-item#fileInfo .icon-btn,
+.status-bar .status-item#fileInfo #renameFileBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    box-sizing: border-box;
+    padding: 4px 8px;
+    height: 22px;
+    min-width: 22px;
+}
+
+/* Output summary counts */
+.status-counts {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+    margin-left: 0; /* rely on parent gap for consistent spacing */
+}
+
+.status-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.status-count span {
+    font-weight: 700;
+    min-width: 0;
+    padding-left: 2px;
+    text-align: left;
+}
+
+/* Color-coded numeric counts */
+#passCountNum { color: var(--accent-success); }
+#warningCountNum { color: var(--accent-warning); }
+#errorCountNum { color: var(--accent-error); }
+
+/* Status states */
+.status-ready {
+    color: #28a745 !important;
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Force the little Ready dot in the status bar to always be green regardless of theme/accent.
+   Use a high-specificity selector targeting the statusIndicator element and !important to
+   override any theme variables or later rules. */
+.status-bar #statusIndicator .status-ready,
+.status-bar .status-item#statusIndicator .status-ready {
+    color: #28a745 !important;
+}
+
+.status-running {
+    color: var(--accent-warning);
+    animation: pulse-dot 0.5s ease-in-out infinite;
+}
+
+.status-waiting {
+    color: var(--accent-info);
+    animation: pulse-dot 1s ease-in-out infinite;
+}
+
+.status-error {
+    color: var(--accent-error);
+}
+
+/* Animation */
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Autosave spinner in status bar */
+.autosave-spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.12);
+    border-top-color: var(--accent-primary);
+    box-sizing: border-box;
+    display: inline-block;
+}
+.autosave-spinner.autosaving {
+    animation: autospin 800ms linear infinite;
+}
+@keyframes autospin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Small label (hidden by default) - accessible on hover via title attribute */
+.autosave-label { font-size: 11px; color: var(--text-secondary); margin-left: 6px; }
+
+/* --- ADDED POLISH: ensure everything aligns perfectly --- */
+.status-bar * {
+    box-sizing: border-box;
+}
+.status-bar span,
+.status-bar small,
+.status-bar p {
+    line-height: 1;
+}
+
+/* ============================================
+   Settings Modal
+   ============================================ */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    animation: slideDown 0.3s ease;
+}
+
+/* Glassmorphism variant for small single-purpose modals (rename) */
+.rename-modal-content {
+    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(8px) saturate(120%);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.6);
+    padding: 0;
+}
+
+.rename-input {
+    outline: none;
+    transition: box-shadow 160ms ease, border-color 160ms ease, transform 120ms ease;
+}
+.rename-input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 6px 18px rgba(0,122,204,0.12);
+    transform: translateY(-1px);
+}
+
+/* Slightly darker modal backdrop for modal emphasis while keeping glass look */
+.modal#renameModal {
+    background: rgba(10,10,10,0.55);
+}
+
+/* Small adjustments to modal footer for tighter look */
+.modal#renameModal .modal-footer {
+    padding: 12px 16px;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Font size indicator (transient) shown at center of each panel when user changes font size */
+.left-panel .font-size-indicator,
+.output-container .font-size-indicator,
+.variables-container .font-size-indicator,
+.repl-wrapper .font-size-indicator {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    pointer-events: none !important;
+    font-size: 100px !important;
+    font-weight: 600 !important;
+    color: var(--theme-accent, var(--accent-primary)) !important;
+    opacity: 0 !important;
+    transition: opacity 0.05s linear !important;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.6) !important;
+    background: transparent !important;
+    padding: 2px 6px !important;
+    border-radius: 6px !important;
+    z-index: 99999 !important;
+}
+.left-panel .font-size-indicator.visible,
+.output-container .font-size-indicator.visible,
+.variables-container .font-size-indicator.visible,
+.repl-wrapper .font-size-indicator.visible {
+    opacity: 0.2 !important; /* 20% opacity per request */
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    transition: color var(--transition-fast);
+}
+
+.close-btn:hover {
+    color: var(--accent-error);
+}
+
+.modal-body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Spotify modal specific styles */
+.spotify-modal-content {
+    max-width: 820px;
+    width: 92%;
+}
+.spotify-auth { display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+.spotify-auth .spotify-status { color: var(--text-secondary); }
+.spotify-controls { display:flex; flex-direction:column; }
+.spotify-controls.hidden { display:none; }
+.spotify-search-actions { display:flex; gap:8px; align-items:center; margin-top:6px; }
+.spotify-result-row:hover { background: rgba(255,255,255,0.02); }
+.spotify-result-row img { flex: 0 0 auto; }
+.spotify-results { border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); }
+
+
+.settings-section {
+    margin-bottom: 24px;
+}
+
+.settings-section h3 {
+    font-size: 16px;
+    margin-bottom: 16px;
+    color: var(--accent-primary);
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-item label {
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.setting-input {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.setting-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+/* Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    transition: var(--transition-fast);
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background: var(--text-secondary);
+    transition: var(--transition-fast);
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+    background: white;
+}
+
+/* Shortcuts List */
+.shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.shortcut-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+}
+
+.modal-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    line-height: 1;
+    transition: all var(--transition-fast);
+    /* Use the user-selected interface font and size */
+    font-family: var(--font-ui, var(--font-sans));
+    font-size: var(--font-ui-size, 14px);
+}
+
+.btn-primary {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    border-color: var(--accent-primary);
+}
+
+/* ============================================
+   Toast Notifications
+   ============================================ */
+.toast-container {
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.toast {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    min-width: 300px;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: toastSlideIn 0.3s ease;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.toast.toast-success {
+    border-left: 4px solid var(--accent-success);
+}
+
+.toast.toast-error {
+    border-left: 4px solid var(--accent-error);
+}
+
+.toast.toast-warning {
+    border-left: 4px solid var(--accent-warning);
+}
+
+.toast.toast-info {
+    border-left: 4px solid var(--accent-info);
+}
+
+.toast-icon {
+    font-size: 20px;
+}
+
+.toast-success .toast-icon { color: var(--accent-success); }
+.toast-error .toast-icon { color: var(--accent-error); }
+.toast-warning .toast-icon { color: var(--accent-warning); }
+.toast-info .toast-icon { color: var(--accent-info); }
+
+.toast-content {
+    flex: 1;
+}
+
+.toast-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.toast-message {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    transition: color var(--transition-fast);
+}
+
+.toast-close:hover {
+    color: var(--text-primary);
+}
+
+/* ============================================
+   Loading Overlay
+   ============================================ */
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.loading-spinner {
+    text-align: center;
+    color: white;
+}
+
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top: 4px solid var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* When an inline input prompt is active, hide the full-page spinner so
+   it doesn't block the prompt interaction. The prompt code will add
+   .prompt-active to the overlay while the inline prompt is visible. */
+.loading-overlay.prompt-active .spinner {
+    display: none !important;
+}
+
+/* While an inline prompt is active, make the overlay transparent and
+   non-blocking so the prompt is fully usable and nothing visually
+   obstructs it. */
+.loading-overlay.prompt-active {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    pointer-events: none !important;
+}
+
+/* ============================================
+   Scrollbar Styling
+   ============================================ */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bg-elevated);
+    border-radius: 5px;
+    border: 2px solid var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+
+/* Large tablets and small desktops */
+@media (max-width: 1200px) {
+    .main-container {
+        flex-direction: column;
+    }
+    
+    .split-panel {
+        height: auto !important;
+        min-height: 400px;
+    }
+    
+    .left-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .CodeMirror {
+        height: 350px;
+    }
+}
+
+/* Tablets */
+@media (max-width: 992px) {
+    .top-navbar {
+        padding: 6px 12px;
+    }
+    
+    .nav-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+    
+    .nav-btn i {
+        font-size: 14px;
+    }
+    
+    .panel-header {
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .panel-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .mode-switcher {
+        margin-right: 0;
+        margin-bottom: 8px;
+    }
+    
+    .CodeMirror {
+        height: 300px;
+        font-size: 13px;
+    }
+    
+    .output-console {
+        font-size: 12px;
+    }
+    
+    .variables-content {
+        font-size: 11px;
+    }
+}
+
+/* Make sure nav buttons use the UI font too */
+.nav-btn, .run-btn, input[type="button"], input[type="submit"], button {
+    font-family: var(--font-ui, var(--font-sans));
+    font-size: var(--font-ui-size, 13px);
+}
+
+/* If a pill-slider is present, ensure its options use the UI font */
+.pill-option {
+    font-family: var(--font-ui, var(--font-sans));
+    font-size: var(--font-ui-size, 13px);
+}
+
+/* Mobile devices */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+    }
+    
+    .top-navbar {
+        height: auto;
+        min-height: 48px;
+        padding: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .nav-brand {
+        flex: 1;
+        min-width: 150px;
+    }
+    
+    .brand-icon {
+        font-size: 20px;
+    }
+    
+    .brand-name {
+        font-size: 16px;
+    }
+    
+    .nav-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        width: 100%;
+        margin-top: 8px;
+    }
+    
+    .nav-btn {
+        flex: 1;
+        min-width: calc(33.333% - 5px);
+        padding: 8px 6px;
+        font-size: 11px;
+        justify-content: center;
+    }
+    
+    .nav-btn i {
+        margin-right: 0;
+    }
+    
+    .nav-btn:nth-child(n+4) i + * {
+        display: none; /* Hide text on smaller buttons */
+    }
+    
+    .main-container {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .split-panel {
+        height: auto !important;
+        max-height: none;
+        min-height: 300px;
+    }
+    
+    .left-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .panel-header {
+        padding: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .panel-title {
+        font-size: 13px;
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .panel-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .mode-switcher {
+        order: -1;
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 10px;
+        padding: 6px 10px;
+    }
+    
+    .mode-label {
+        font-size: 11px;
+    }
+    
+    .icon-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    .run-btn {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .CodeMirror {
+        height: 250px;
+        font-size: 12px;
+    }
+    
+    .repl-wrapper {
+        min-height: 250px;
+    }
+    
+    .repl-output {
+        padding: 12px;
+        font-size: 11px;
+    }
+    
+    .repl-input-container {
+        padding: 10px;
+    }
+    
+    .repl-input {
+        font-size: 12px;
+    }
+    
+    .output-container {
+        min-height: 250px;
+    }
+    
+    .output-console {
+        padding: 12px;
+        font-size: 11px;
+    }
+    
+    .welcome-message {
+        padding: 30px 15px;
+        min-height: 110px;
+        gap: 10px;
+    }
+    
+    .welcome-message i {
+        font-size: 48px;
+    }
+    
+    .variables-container {
+        min-height: 200px;
+    }
+    
+    .variables-content {
+        padding: 10px;
+        font-size: 11px;
+    }
+    
+    .variable-item {
+        padding: 10px;
+        margin-bottom: 6px;
+    }
+    
+    .variable-header {
+        flex-wrap: wrap;
+    }
+    
+    .variable-name {
+        font-size: 12px;
+        word-break: break-all;
+    }
+    
+    .variable-value {
+        word-break: break-all;
+        max-width: 100%;
+    }
+    
+    .history-sidebar {
+        width: 100%;
+    }
+    
+    .status-bar {
+        padding: 0 10px;
+        height: auto;
+        min-height: 24px; /* keep mobile min-height consistent with reduced desktop height */
+        flex-wrap: wrap;
+        font-size: 10px;
+    }
+    
+    .status-left,
+    .status-center,
+    .status-right {
+        gap: 8px;
+    }
+    
+    .status-center {
+        display: none;
+    }
+    
+    .status-item {
+        gap: 4px;
+    }
+    
+    /* Modal improvements for mobile */
+    .modal-content {
+        width: 95%;
+        max-height: 90vh;
+        margin: 10px;
+    }
+    
+    .modal-header {
+        padding: 15px;
+    }
+    
+    .modal-header h2 {
+        font-size: 18px;
+    }
+    
+    .modal-body {
+        padding: 15px;
+    }
+    
+    .settings-section h3 {
+        font-size: 14px;
+    }
+    
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .setting-input {
+        width: 100%;
+    }
+    
+    .modal-footer {
+        padding: 12px 15px;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        min-width: calc(50% - 6px);
+    }
+    
+    /* Toast notifications */
+    .toast-container {
+        top: 70px;
+        right: 10px;
+        left: 10px;
+    }
+    
+    .toast {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .toast-title {
+        font-size: 13px;
+    }
+    
+    .toast-message {
+        font-size: 11px;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .top-navbar {
+        padding: 6px;
+    }
+    
+    .brand-name {
+        display: none;
+    }
+    
+    .nav-controls {
+        gap: 4px;
+    }
+    
+    .nav-btn {
+        min-width: calc(25% - 4px);
+        padding: 8px 4px;
+    }
+    
+    .nav-btn i + * {
+        display: none; /* Hide all button text */
+    }
+    
+    .CodeMirror {
+        height: 200px;
+        font-size: 11px;
+    }
+    
+    .repl-output,
+    .output-console {
+        font-size: 10px;
+        padding: 10px;
+    }
+    
+    .variables-content {
+        font-size: 10px;
+        padding: 8px;
+    }
+    
+    .variable-item {
+        padding: 8px;
+    }
+    
+    .panel-header {
+        padding: 8px;
+    }
+    
+    .panel-title {
+        font-size: 12px;
+    }
+    
+    .icon-btn {
+        padding: 6px 8px;
+        font-size: 11px;
+    }
+    
+    kbd {
+        font-size: 9px;
+        padding: 1px 4px;
+    }
+    
+    .status-bar {
+        font-size: 9px;
+        padding: 0 6px;
+    }
+    
+    .modal-content {
+        width: 98%;
+        max-height: 95vh;
+    }
+    
+    .modal-header h2 {
+        font-size: 16px;
+    }
+    
+    .btn {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+}
+
+/* Landscape orientation for mobile */
+@media (max-width: 896px) and (orientation: landscape) {
+    .split-panel {
+        min-height: 250px;
+    }
+    
+    .CodeMirror {
+        height: 200px;
+    }
+    
+    .output-container,
+    .repl-wrapper {
+        min-height: 200px;
+    }
+    
+    .welcome-message {
+        padding: 20px 15px;
+        gap: 8px;
+        min-height: 90px;
+    }
+    
+    .welcome-message i {
+        font-size: 30px;
+    }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+    /* Increase tap targets for touch devices */
+    .btn,
+    .icon-btn,
+    .nav-btn {
+        min-height: 44px;
+        min-width: 44px;
+        touch-action: manipulation;
+    }
+    
+    .example-btn,
+    .history-item,
+    .variable-item {
+        min-height: 44px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Prevent zoom on input focus (iOS) */
+    input[type="text"],
+    input[type="range"],
+    textarea,
+    select,
+    .repl-input,
+    .CodeMirror {
+        font-size: 16px !important;
+    }
+    
+    /* Better scrolling on touch devices */
+    .output-console,
+    .repl-output,
+    .variables-content,
+    .history-list,
+    .modal-body {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+    
+    /* Remove hover effects on touch devices */
+    .btn:hover,
+    .icon-btn:hover,
+    .nav-btn:hover,
+    .variable-item:hover,
+    .history-item:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    /* Add active states for better feedback */
+    .btn:active,
+    .icon-btn:active,
+    .nav-btn:active {
+        opacity: 0.7;
+    }
+}
+
+/* ============================================
+   Glassmorphism for Settings Modal
+   Applies a backdrop blur and translucent panel background
+   to give the Settings modal a frosted-glass appearance.
+   Appended near the end so it's safe to add without
+   replacing existing rules.
+   ============================================ */
+
+/* Target either the template modal or injected modal content */
+#settingsModal .modal-content,
+.modal-settings .modal-content {
+    background: rgba(255, 255, 255, 0.08); /* light translucent for dark themes */
+    backdrop-filter: blur(8px) saturate(115%);
+    -webkit-backdrop-filter: blur(8px) saturate(115%);
+    border: 1px solid rgba(255,255,255,0.07);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    border-radius: 10px;
+    overflow: hidden; /* make inner modal corners clean */
+}
+
+/* Slightly stronger and lighter background for light themes */
+body[data-theme="light"] #settingsModal .modal-content,
+body[data-theme="light"] .modal-settings .modal-content {
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid rgba(16,24,32,0.06);
+    box-shadow: 0 8px 24px rgba(16,24,32,0.08);
+}
+
+/* Modal body should maintain its own translucent panel so inner sections keep contrast */
+#settingsModal .modal-body,
+.modal-settings .modal-body {
+    background: transparent;
+}
+
+/* Add an overlay tint that supports glass feel; keep pointer-events default to allow backdrop clicks
+   to still close the modal if app uses overlay clicks. Adjust z-index to sit behind modal content. */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 12, 14, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 999;
+}
+
+/* Lighter backdrop in light theme */
+body[data-theme="light"] .modal-backdrop {
+    background: rgba(255, 255, 255, 0.55);
+}
+
+/* Reduce blur on low-powered devices or when user prefers reduced motion */
+@media (prefers-reduced-transparency: reduce), (prefers-reduced-motion: reduce) {
+    #settingsModal .modal-content,
+    .modal-settings .modal-content,
+    .modal-backdrop {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+}
+
+/* Ensure modal header and footer remain visually distinct on glass backgrounds */
+#settingsModal .modal-header,
+.modal-settings .modal-header,
+#settingsModal .modal-footer,
+.modal-settings .modal-footer {
+    background: linear-gradient(to bottom, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+}
+
+/* Stronger active rules for Settings modal to ensure frosted glass look is visible
+   even if other modal rules exist or themes override basic styles. This targets the
+   active state specifically and uses higher specificity and !important where necessary. */
+#settingsModal.active {
+    background: rgba(10, 12, 14, 0.25) !important; /* lighten the dimming so background details remain visible */
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    z-index: 2000 !important;
+}
+
+#settingsModal.active .modal-content,
+.modal-settings.active .modal-content {
+    background: rgba(255,255,255,0.06) !important; /* subtle translucency on dark theme */
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.45) !important;
+    backdrop-filter: blur(12px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+    border-radius: 12px !important;
+    transform: translateZ(0); /* promote to its own layer for smoother blur */
+    z-index: 2001 !important;
+}
+
+/* In light theme make the content slightly more opaque to preserve contrast */
+body[data-theme="light"] #settingsModal.active .modal-content,
+body[data-theme="light"] .modal-settings.active .modal-content {
+    background: rgba(255,255,255,0.94) !important;
+    border: 1px solid rgba(16,24,32,0.06) !important;
+    box-shadow: 0 18px 40px rgba(16,24,32,0.08) !important;
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .CodeMirror,
+    .output-console,
+    .repl-output,
+    .variables-content {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Reduce animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .loading-spinner .spinner {
+        animation: none;
+        border-top-color: var(--accent-primary);
+    }
+}
+
+/* ============================================
+   Animations & Transitions
+   ============================================ */
+.fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease;
+}
+
+.bounce {
+    animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+.hidden {
+    display: none !important;
+}
+
+.collapsed {
+    max-height: 0 !important;
+    overflow: hidden !important;
+}
+
+.text-success { color: var(--accent-success); }
+.text-error { color: var(--accent-error); }
+.text-warning { color: var(--accent-warning); }
+.text-info { color: var(--accent-info); }
+
+.bg-success { background: var(--accent-success); }
+.bg-error { background: var(--accent-error); }
+.bg-warning { background: var(--accent-warning); }
+.bg-info { background: var(--accent-info); }
+
+/* Strong override placed at the end to ensure headers show a visible divider
+   in light theme. Use a slightly darker line and !important so earlier
+   repeated .panel-header rules don't hide it. */
+[data-theme="light"] .right-panel .output-container > .panel-header,
+[data-theme="light"] .right-panel .variables-container > .panel-header,
+[data-theme="light"] .right-panel .repl-wrapper > .panel-header {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* Remove top border for the Variables Explorer to make header flush with content */
+#app .variables-container,
+#app .variables-container > .panel-header,
+.variables-container,
+.variables-container > .panel-header {
+    border-top: none !important;
+}
+
+/* Ultra-specific persisted overrides to ensure the Output Console panel is totally borderless */
+#app .right-panel,
+#app .right-panel .output-container,
+#app .right-panel .output-console,
+#app .right-panel .output-container > .panel-header,
+#app .right-panel .output-console > .panel-header,
+#app .right-panel .panel-header,
+#app .right-panel .split-panel {
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: var(--panel-bg) !important;
+}
+
+/* Ensure inner output content and headers have no separators */
+#app .right-panel .output-console,
+#app .right-panel .output-content,
+#app .right-panel #output {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: var(--panel-bg) !important;
+}
+
+/* Remove any pseudo elements that could draw lines */
+#app .right-panel .panel-header::before,
+#app .right-panel .panel-header::after,
+.CodeMirror-gutters::before,
+.CodeMirror-gutters::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* Gutter default grey with accent on hover/drag */
+:root {
+    --gutter-default: rgba(128,128,128,0.28);
+}
+
+.gutter,
+.custom-resizer {
+    background: var(--gutter-default) !important;
+    border: none !important;
+}
+
+.gutter:hover,
+.gutter.gutter-dragging,
+.custom-resizer:hover {
+    background: var(--theme-accent) !important;
+}
+
+/* ==================================================
+   Last-resort light-theme fixes
+   Ensure buttons remain transparent when hovered in
+   light mode and remove the grey wash/overlays.
+   This block uses high-specificity selectors and
+   !important to override other rules (including UA
+   or theme CSS). Place at the end of the file.
+   ================================================== */
+body[data-theme="light"] button,
+body[data-theme="light"] .nav-btn,
+body[data-theme="light"] .icon-btn,
+body[data-theme="light"] .btn,
+body[data-theme="light"] .nav-controls .nav-btn,
+body[data-theme="light"] .nav-controls.pill-group .nav-btn {
+    /* Ensure base state is transparent and text is dark */
+    background: transparent !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    color: #000 !important;
+    border-color: transparent !important;
+}
+
+/* Force transparent backgrounds on hover/focus/active for all buttons in light theme */
+body[data-theme="light"] button:hover,
+body[data-theme="light"] button:focus,
+body[data-theme="light"] button:active,
+body[data-theme="light"] .nav-btn:hover,
+body[data-theme="light"] .nav-btn:focus,
+body[data-theme="light"] .nav-btn:active,
+body[data-theme="light"] .icon-btn:hover,
+body[data-theme="light"] .icon-btn:focus,
+body[data-theme="light"] .btn:hover,
+body[data-theme="light"] .btn:focus {
+    background: transparent !important; /* remove grey wash */
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    color: #000 !important; /* ensure readable text */
+    border-color: var(--theme-accent, var(--accent-primary)) !important; /* show accent outline if desired */
+}
+
+/* Disable overlay pseudo-elements that may create the grey tint */
+body[data-theme="light"] .nav-btn::before,
+body[data-theme="light"] .nav-btn::after,
+body[data-theme="light"] .btn::before,
+body[data-theme="light"] .btn::after,
+body[data-theme="light"] .icon-btn::before,
+body[data-theme="light"] .icon-btn::after,
+body[data-theme="light"] .nav-controls.pill-group .nav-btn::before,
+body[data-theme="light"] .nav-controls.pill-group .nav-btn::after {
+    display: none !important;
+    content: none !important;
+    opacity: 0 !important;
+    background: transparent !important;
+}
+
+/* If any inline style sets a background color on hover via JS, neutralize it when the mouse is over the app
+   by forcing the computed background to transparent using a pointer-event-safe overlay. This is last-resort
+   and only applies in light mode. It's defensive against inline styles that are hard to override. */
+body[data-theme="light"] .top-navbar button:hover,
+body[data-theme="light"] .top-navbar .nav-btn:hover {
+    background-color: transparent !important;
+}
+
+/* ============================================
+   Settings — Font controls normalization
+   Ensure select boxes and preview boxes in the
+   Settings modal use consistent sizing, padding,
+   and background so "all boxes" look uniform.
+   Appended at the end to avoid context conflicts.
+   ============================================ */
+.settings-section .font-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: start;
+}
+.settings-section .font-controls .setting-item {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 0;
+    border-bottom: none;
+}
+.setting-select,
+.setting-input,
+.font-preview {
+    font-family: var(--font-ui, var(--font-sans));
+    font-size: var(--font-ui-size, 13px);
+    color: var(--text-primary);
+}
+.setting-select {
+    height: 38px;
+    padding: 8px 10px;
+    min-width: 160px;
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+}
+.font-preview {
+    padding: 10px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@media (max-width: 768px) {
+    .settings-section .font-controls {
+        grid-template-columns: 1fr;
+    }
+    .setting-select {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+/* CodeMirror gutter colored line numbers (ok/warning/error) */
+.CodeMirror-gutters {
+    background: transparent !important;
+}
+.CodeMirror-gutter-wrapper .CodeMirror-linenumber {
+    transition: color 160ms ease, background-color 160ms ease, border-radius 4px;
+    padding: 0 6px !important;
+    border-radius: 4px;
+}
+.cm-line-ok .CodeMirror-linenumber,
+.CodeMirror-gutter-wrapper .cm-line-ok { color: #4caf50 !important; } /* green */
+.cm-line-warning .CodeMirror-linenumber,
+.CodeMirror-gutter-wrapper .cm-line-warning { color: #f59e0b !important; } /* amber */
+.cm-line-error .CodeMirror-linenumber,
+.CodeMirror-gutter-wrapper .cm-line-error { color: #ef4444 !important; } /* red */
+
+/* For CodeMirror versions that add classes to the gutter line handles instead of wrapper */
+.CodeMirror-linenumber.cm-line-ok { color: #4caf50 !important; }
+.CodeMirror-linenumber.cm-line-warning { color: #f59e0b !important; }
+.CodeMirror-linenumber.cm-line-error { color: #ef4444 !important; }
+
+/* Slight background pill to make the colored number readable on various themes */
+.CodeMirror-gutter-wrapper .CodeMirror-linenumber { background: rgba(255,255,255,0.02); }
+.cm-line-error .CodeMirror-linenumber { background: rgba(239,68,68,0.06); }
+.cm-line-warning .CodeMirror-linenumber { background: rgba(245,158,11,0.06); }
+.cm-line-ok .CodeMirror-linenumber { background: rgba(76,175,80,0.06); }
+
+/* ==================================================
+   Global animation / transition smoothing (polish)
+   - centralizes easing & durations
+   - adds will-change for heavy transforms
+   - respects prefers-reduced-motion
+   - non-destructive: uses additive selectors
+   ================================================== */
+
+:root {
+    /* Harmonize timing so UI feels cohesive */
+    --anim-fast: 120ms;
+    --anim-medium: 220ms;
+    --anim-slow: 360ms;
+    --ease-quad: cubic-bezier(.2,.9,.2,1);
+    --ease-accel: cubic-bezier(.16,.84,.24,1);
+}
+
+/* Provide a short, specific set of properties to transition to avoid "transition: all" which can be janky */
+*,
+*::before,
+*::after {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Standard transitions used across interactive UI elements */
+.nav-btn,
+.nav-controls .nav-btn,
+.icon-btn,
+.btn,
+.run-btn,
+.tab,
+.tab .tab-actions i,
+.panel-header,
+.panel-title,
+.panel-actions,
+.status-item,
+.modal-content,
+.modal,
+.history-sidebar,
+.variable-item,
+.output-line-wrapper,
+.interactive-content img {
+    transition-property: transform, opacity, color, background-color, border-color, box-shadow;
+    transition-duration: var(--anim-medium);
+    transition-timing-function: var(--ease-quad);
+    will-change: transform, opacity;
+}
+
+/* Buttons and overlays: slightly snappier for hover feedback */
+.icon-btn,
+.nav-btn,
+.btn,
+.run-btn {
+    transition-duration: var(--anim-fast);
+    transition-timing-function: var(--ease-accel);
+    will-change: transform, opacity, box-shadow;
+}
+
+/* Tabs: smoother appearing and hover */
+.tab,
+.tab.active {
+    transition-duration: var(--anim-medium);
+    transition-timing-function: var(--ease-quad);
+    will-change: transform, opacity, background-color;
+}
+
+/* Panel show/hide helpers (use class toggles in JS) */
+.panel-fade,
+.panel-fade.fading-in,
+.panel-fade.fading-out {
+    transition-property: opacity, transform;
+    transition-duration: var(--anim-medium);
+    transition-timing-function: var(--ease-quad);
+    will-change: opacity, transform;
+}
+
+/* Smooth scroll fallback for panels and output containers */
+.output-console,
+.variables-content,
+.history-list {
+    scroll-behavior: smooth;
+}
+
+/* Micro-interactions: subtle scale on press for tactile feel */
+.btn:active,
+.nav-btn:active,
+.icon-btn:active {
+    transform: scale(0.995);
+}
+
+/* Keyframe smoothing: reduce abrupt motion by combining translate+opacity */
+@keyframes subtleSlideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Apply subtleSlideIn for toast and small transient UI */
+.toast { animation: subtleSlideIn var(--anim-medium) var(--ease-quad); }
+
+/* Respect user's reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    :root { --anim-fast: 0ms; --anim-medium: 0ms; --anim-slow: 0ms; }
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0ms !important;
+        animation-duration: 0ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Small performance tweak: hint that elements may be animated — helps browsers optimize rendering */
+.panel-header,
+.nav-controls,
+.status-bar,
+.tab,
+.gutter,
+.modal-content,
+.toast {
+    will-change: transform, opacity;
+}
+
+/* Run button fall-to-status animation
+   JavaScript sets --fall-x and --fall-y on the button before adding
+   the class .run-fall. The animation moves the button visually to the
+   status bar and then springs it back to its original position. */
+.run-btn.run-fall {
+    /* disable pointer events while animating */
+    pointer-events: none;
+    z-index: 9999;
+    animation-name: runFallBounce;
+    animation-duration: 700ms;
+    animation-timing-function: cubic-bezier(.2,.9,.3,1);
+    animation-fill-mode: forwards;
+}
+
+/* ============================================
+   Icon-only top toolbar (minimal icons, no background/borders)
+   - default icon color: white
+   - on hover/focus: icon color -> accent, small label fades in below (0.2s)
+   - horizontal layout with equal spacing
+   - responsive: center-aligned on small screens
+   ============================================ */
+
+.icon-toolbar {
+    /* Use CSS grid for perfectly even spacing: each icon gets one column */
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 40px; /* slightly narrower slots for tighter layout */
+    gap: 12px; /* reduced gap between slots */
+    align-items: center;
+    align-content: center;
+    place-items: center; /* center items both horizontally/vertically inside each slot */
+    justify-content: end; /* keep toolbar right-aligned by default */
+    height: 100%; /* ensure toolbar stretches to navbar height for perfect centering */
+    /* vertical offset for icons (use smaller values on narrow screens) */
+    --icon-vertical-offset: 8px;
+}
+
+.nav-icon-btn {
+    background: transparent;
+    border: none;
+    padding: 0; /* remove vertical padding so icons sit centered */
+    margin: 0;
+    color: #ffffff; /* default white icons */
+    cursor: pointer;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 40px; /* match grid-auto-columns */
+    height: 40px;
+    /* nudge icons down by the configured offset */
+    transform: translateY(var(--icon-vertical-offset, 4px));
+    line-height: 1;
+    transition: color 180ms var(--ease-accel), transform 180ms var(--ease-accel);
+}
+
+/* Ensure children align to the center of the navbar and override any inherited padding */
+.top-navbar .nav-controls,
+.top-navbar .icon-toolbar {
+    height: 100%;
+    display: grid; /* allow grid's center alignment to apply */
+    align-items: center;
+}
+
+.icon-toolbar > * {
+    align-self: center; /* force each slot to center inside the grid row */
+}
+
+.nav-icon-btn i,
+.nav-icon-btn .fab,
+.nav-icon-btn .fas,
+.nav-icon-btn .far {
+    font-size: 18px;
+    color: inherit; /* inherit from button color */
+}
+
+.nav-icon-btn .icon-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 200ms ease, transform 200ms ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.nav-icon-btn:focus {
+    outline: none;
+}
+
+.nav-icon-btn:hover,
+.nav-icon-btn:focus,
+.nav-icon-btn:active {
+    /* Ensure the button's computed color switches to the theme accent on interaction.
+       Use !important defensively because theme code may inject colors later. */
+    color: var(--theme-accent, var(--accent-primary)) !important;
+}
+
+/* Apply accent color to icon children (font icons and SVG). Use currentColor for
+   SVG fill/stroke so they follow the text color. The !important flags ensure
+   these rules win over theme-injected styles. */
+.nav-icon-btn:hover i,
+.nav-icon-btn:hover .fa,
+.nav-icon-btn:hover .fab,
+.nav-icon-btn:hover .fas,
+.nav-icon-btn:hover .far,
+.nav-icon-btn:focus i,
+.nav-icon-btn:focus .fa,
+.nav-icon-btn:active i,
+.nav-icon-btn:active .fa,
+.nav-icon-btn:hover svg,
+.nav-icon-btn:focus svg,
+.nav-icon-btn:active svg {
+    color: var(--theme-accent, var(--accent-primary)) !important;
+    /* For inline SVGs ensure they pick up the current text color */
+    fill: currentColor !important;
+    stroke: currentColor !important;
+}
+
+/* Make any SVG content default to currentColor where possible (icons using <path> etc.) */
+.nav-icon-btn svg,
+.nav-icon-btn svg * {
+    fill: currentColor;
+    stroke: currentColor;
+}
+
+.nav-icon-btn:hover .icon-label,
+.nav-icon-btn:focus .icon-label {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Ensure labels also appear when using keyboard navigation (focus-visible) */
+.nav-icon-btn:focus-visible .icon-label { opacity: 1; transform: translateY(0); }
+
+/* Remove any overlay pseudo-elements for these icon buttons to keep minimal look */
+.nav-icon-btn::before,
+.nav-icon-btn::after { display: none !important; content: none !important; }
+
+/* Theme compatibility: ensure icons stay white on dark backgrounds and dark on light theme */
+body[data-theme="dark"] .nav-icon-btn { color: #ffffff; }
+body[data-theme="light"] .nav-icon-btn { color: #222222; }
+
+/* Make toolbar center-aligned on small screens and spread evenly */
+@media (max-width: 768px) {
+    .icon-toolbar {
+        justify-content: center;
+        width: 100%;
+        margin-top: 6px;
+        grid-auto-columns: 36px;
+        gap: 10px;
+    --icon-vertical-offset: 8px;
+    }
+    .nav-icon-btn { width: 36px; height: 36px; }
+}
+
+/* When top-navbar wraps (very small screens), center icons in a single row */
+@media (max-width: 480px) {
+    .top-navbar { padding: 8px 10px; }
+    .icon-toolbar { justify-content: center; gap: 8px; width: 100%; grid-auto-columns: 32px; --icon-vertical-offset: 8px; }
+    .nav-icon-btn { width: 32px; height: 32px; }
+    .brand-name { display: none; }
+}
+
+/* Accessibility: show label for screen readers but keep visually hidden unless hover/focus */
+.nav-icon-btn .icon-label[aria-hidden] { display: none; }
+
+
+@keyframes runFallBounce {
+    0% {
+        transform: translate3d(0,0,0) scale(1);
+    }
+    55% {
+        /* reach the status bar position (set via --fall-x/y) */
+        transform: translate3d(var(--fall-x, 0px), var(--fall-y, 0px), 0) scale(0.85) rotate(-4deg);
+    }
+    75% {
+        transform: translate3d(calc(var(--fall-x, 0px) * 0.98), calc(var(--fall-y, 0px) * 0.98), 0) scale(1.02) rotate(2deg);
+    }
+    90% {
+        transform: translate3d(calc(var(--fall-x, 0px) * 0.02), calc(var(--fall-y, 0px) * 0.02), 0) scale(0.99) rotate(-1deg);
+    }
+    100% {
+        transform: translate3d(0,0,0) scale(1) rotate(0deg);
+    }
+}
+
+/* ============================
+   Override: Remove orange background squares
+   These rules force icon-only toolbar buttons to be fully transparent,
+   borderless, and auto-sized so icons are not shown inside colored squares.
+   High-specificity and !important used defensively to override earlier rules
+   or inline styles that create the orange blocks seen in the UI.
+   ============================ */
+
+.top-navbar .nav-icon-btn,
+.nav-controls .nav-icon-btn,
+.nav-icon-btn {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 6px !important;
+    margin: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    border-radius: 0 !important;
+    line-height: 1 !important;
+}
+
+/* Ensure the <i> icons themselves don't carry a colored background */
+.nav-icon-btn i,
+.nav-icon-btn .fa,
+.nav-icon-btn .fab,
+.nav-icon-btn .fas,
+.nav-icon-btn .far {
+    background: transparent !important;
+    display: inline-block;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Defensive: neutralize any utility/background classes that may be applied */
+.nav-icon-btn[class*="bg-"],
+.nav-icon-btn[class*="bg_"] {
+    background: transparent !important;
+}
+
+/* If a wrapping container applies a colored surface (e.g., pill-group), override it */
+.nav-controls.pill-group,
+.nav-controls.pill-group .nav-icon-btn {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Keep label coloring subtle and non-intrusive */
+.nav-icon-btn .icon-label { color: var(--text-secondary) !important; }
+
+/* Last-resort override: target each toolbar button by ID to remove any residual
+   colored background (including inline styles). This uses !important to ensure
+   it wins over other rules. */
+#newSessionBtn,
+#saveCodeBtn,
+#loadFileBtn,
+#clearConsoleBtn,
+#settingsBtn,
+#themeToggleBtn,
+#spotifyBtn {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 4px !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+}
+
+#newSessionBtn i,
+#saveCodeBtn i,
+#loadFileBtn i,
+#clearConsoleBtn i,
+#settingsBtn i,
+#themeToggleBtn i,
+#spotifyBtn i {
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-block !important;
+}
+
+/* Ultra-specific neutralization for any remaining colored surfaces inside the top navbar */
+.top-navbar .nav-controls,
+.top-navbar .nav-controls *,
+.top-navbar .nav-controls *::before,
+.top-navbar .nav-controls *::after {
+    background: transparent !important;
+    background-image: none !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Remove pseudo-element overlays coming from earlier button overlay system */
+.top-navbar .nav-controls .nav-btn::before,
+.top-navbar .nav-controls .nav-btn::after,
+.top-navbar .nav-controls .nav-icon-btn::before,
+.top-navbar .nav-controls .nav-icon-btn::after,
+.nav-icon-btn::before,
+.nav-icon-btn::after {
+    content: none !important;
+    display: none !important;
+    opacity: 0 !important;
+    background: transparent !important;
+}
+
+/* Ensure any utility classes that set a background color are neutralized inside the navbar */
+.top-navbar [class*="bg-"],
+.top-navbar [style*="background"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* High-specificity override for the theme toggle button (defensive)
+   This beats rules like "#app .theme-toggle" and injected theme styles. */
+#app #themeToggleBtn,
+#app button.nav-icon-btn.theme-toggle,
+#themeToggleBtn.theme-toggle {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: inherit !important; /* keep icon color consistent */
+}
+
+#app #themeToggleBtn::before,
+#app #themeToggleBtn::after,
+#themeToggleBtn::before,
+#themeToggleBtn::after {
+    content: none !important;
+    display: none !important;
+    background: transparent !important;
+}
+
+
+
+
+

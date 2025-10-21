@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Python Interpreter - Web IDE</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐍 Python Interpreter</h1>
+            <p class="subtitle">Write and execute Python code in your browser</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel: Code Editor -->
+            <div class="left-panel">
+                <div class="panel-header">
+                    <h2>Code Editor</h2>
+                    <div class="button-group">
+                        <button id="runBtn" class="btn btn-primary" title="Run Code (Ctrl+Enter)">
+                            ▶ Run
+                        </button>
+                        <button id="validateBtn" class="btn btn-secondary" title="Validate Syntax">
+                            ✓ Validate
+                        </button>
+                        <button id="clearEditorBtn" class="btn btn-secondary" title="Clear Editor">
+                            🗑 Clear
+                        </button>
+                    </div>
+                </div>
+                <div class="editor-container">
+                    <textarea id="codeEditor" placeholder="Write your Python code here..."></textarea>
+                </div>
+
+                <!-- REPL Console -->
+                <div class="repl-section">
+                    <div class="panel-header">
+                        <h3>REPL Console</h3>
+                        <button id="clearReplBtn" class="btn btn-small">Clear</button>
+                    </div>
+                    <div id="replOutput" class="repl-output"></div>
+                    <div class="repl-input-container">
+                        <span class="repl-prompt">>>> </span>
+                        <input type="text" id="replInput" class="repl-input" placeholder="Enter Python code...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Output and Variables -->
+            <div class="right-panel">
+                <!-- Output Section -->
+                <div class="output-section">
+                    <div class="panel-header">
+                        <h2>Output</h2>
+                        <button id="clearOutputBtn" class="btn btn-small">Clear</button>
+                    </div>
+                    <div id="output" class="output-content">
+                        <div class="output-placeholder">Output will appear here...</div>
+                    </div>
+                </div>
+
+                <!-- Variables Section -->
+                <div class="variables-section">
+                    <div class="panel-header">
+                        <h3>Variables</h3>
+                        <button id="refreshVarsBtn" class="btn btn-small">Refresh</button>
+                    </div>
+                    <div id="variables" class="variables-content">
+                        <div class="variables-placeholder">No variables defined</div>
+                    </div>
+                </div>
+
+                <!-- Execution History -->
+                <div class="history-section">
+                    <div class="panel-header">
+                        <h3>History</h3>
+                        <button id="clearHistoryBtn" class="btn btn-small">Clear</button>
+                    </div>
+                    <div id="history" class="history-content">
+                        <div class="history-placeholder">Execution history will appear here</div>
+                    </div>
+                </div>
+
+                <!-- Control Panel -->
+                <div class="control-panel">
+                    <button id="resetBtn" class="btn btn-danger">Reset Interpreter</button>
+                    <button id="downloadBtn" class="btn btn-secondary">Download Code</button>
+                    <label for="fileUpload" class="btn btn-secondary">
+                        Upload File
+                        <input type="file" id="fileUpload" accept=".py,.txt" style="display: none;">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Example Code Templates -->
+        <div class="examples-section">
+            <h3>Example Templates</h3>
+            <div class="examples-grid">
+                <button class="example-btn" data-example="hello">Hello World</button>
+                <button class="example-btn" data-example="fibonacci">Fibonacci</button>
+                <button class="example-btn" data-example="class">Class Example</button>
+                <button class="example-btn" data-example="sorting">Sorting</button>
+                <button class="example-btn" data-example="comprehension">List Comprehension</button>
+                <button class="example-btn" data-example="decorator">Decorator</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <span id="status">Ready</span>
+        <span id="lineCount">Lines: 0</span>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/python-hint.min.js"></script>
+    
+    <!-- Theme System -->
+    <script src="{{ url_for('static', filename='themes.js') }}"></script>
+    <script src="{{ url_for('static', filename='settings-ui.js') }}"></script>
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>

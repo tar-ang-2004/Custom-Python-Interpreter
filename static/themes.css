@@ -1,0 +1,1324 @@
+/* ============================================
+   ENHANCED THEME & CUSTOMIZATION STYLES
+   PyInter Advanced Theme System
+   ============================================ */
+
+/* Theme Variables - Will be overridden by JS */
+:root {
+    --theme-primary: #1e1e1e;
+    --theme-secondary: #252526;
+    --theme-tertiary: #2d2d30;
+    --theme-surface: #252526;
+    --theme-hover: #3e3e42;
+    --theme-text: #cccccc;
+    --theme-textSecondary: #858585;
+    --theme-border: #3e3e42;
+    --theme-accent: #007acc;
+    --theme-success: #4ec9b0;
+    --theme-error: #f48771;
+    --theme-warning: #dcdcaa;
+    --theme-info: #9cdcfe;
+    
+    --font-code: 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+    --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    
+    /* Font size customization */
+    --font-size-code: 14px;
+    --font-size-ui: 14px;
+    /* Per-panel overrides (optional) */
+    --font-size-output: var(--font-size-code);
+    --font-size-repl: var(--font-size-code);
+    --font-size-vars: var(--font-size-code);
+}
+
+/* High-specificity override for the bottom status bar to ensure vertical centering
+   This file is loaded after other styles, so use an important-safe, conservative
+   override to avoid breaking other layout rules. */
+.status-bar {
+    /* Keep theme-level rules aligned with the app-level fixed status bar.
+       Enforce the same 36px height so theme.css can't shrink the bar and
+       reveal the underlying seam. */
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    line-height: 1 !important;
+    font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif) !important;
+    z-index: 99999 !important;
+    box-shadow: none !important;
+    background: var(--theme-primary) !important;
+}
+
+.status-bar .status-item {
+    height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+}
+
+/* ============================================
+   CODEMIRROR THEME OVERRIDES
+   Force CodeMirror to match UI theme colors
+   ============================================ */
+
+.CodeMirror {
+    background-color: var(--theme-primary) !important;
+    color: var(--theme-text) !important;
+    border: 1px solid var(--theme-border) !important;
+    font-family: var(--font-code) !important;
+    font-size: var(--font-size-code) !important;
+    line-height: 1.5 !important;
+}
+
+.CodeMirror-gutters {
+    background-color: var(--theme-secondary) !important;
+    border-right: 1px solid var(--theme-border) !important;
+}
+
+.CodeMirror-foldgutter {
+    width: 20px;
+}
+.CodeMirror-foldgutter .CodeMirror-foldmarker {
+    color: var(--theme-text);
+    cursor: pointer;
+}
+/* Remove the small chevron/expand icon while preserving gutter space.
+   Folding remains available via gutter clicks or keyboard shortcuts. */
+.CodeMirror-foldgutter .CodeMirror-foldmarker::before,
+.CodeMirror-foldgutter .CodeMirror-foldmarker { display: none !important; }
+
+/* Also hide any inline or alternate fold marker elements that some
+    CodeMirror builds insert inside the editor lines (covers variants).
+    Folding remains available via gutter clicks or keyboard shortcuts. */
+.CodeMirror-foldmarker,
+.CodeMirror-foldmarker::before,
+.cm-foldmarker,
+.cm-foldmarker::before { display: none !important; width: 0 !important; }
+
+/* Use a CSS class for runtime theming instead of inline styles */
+.cm-gutters-themed {
+    background-color: var(--theme-secondary) !important;
+    border-right: 1px solid var(--theme-border) !important;
+}
+
+.CodeMirror-linenumber {
+    color: var(--theme-textSecondary) !important;
+}
+
+.CodeMirror-cursor {
+    border-left-color: var(--theme-text) !important;
+}
+
+.CodeMirror-selected {
+    background: var(--theme-tertiary) !important;
+}
+
+.CodeMirror-line::selection,
+.CodeMirror-line > span::selection,
+.CodeMirror-line > span > span::selection {
+    background: var(--theme-tertiary) !important;
+}
+
+.CodeMirror-line::-moz-selection,
+.CodeMirror-line > span::-moz-selection,
+.CodeMirror-line > span > span::-moz-selection {
+    background: var(--theme-tertiary) !important;
+}
+
+.CodeMirror-activeline-background {
+    background: var(--theme-secondary) !important;
+}
+
+.CodeMirror-matchingbracket {
+    color: var(--theme-accent) !important;
+    background-color: var(--theme-tertiary) !important;
+}
+
+/* Highlighter styles for marking warning/error words inside CodeMirror
+   These classes are applied via CodeMirror text markers (markText).
+   Use slightly translucent backgrounds to emulate a highlighter effect. */
+.CodeMirror .cm-highlight-warning {
+    background: rgb(255, 208, 0); /* 75% yellow */
+    color: #000000 !important; /* force white text on highlight */
+    border-radius: 0; /* no rounded corners */
+    padding: 0 4px;
+    display: inline-block;
+    line-height: 1.4;
+    box-shadow: none;
+}
+
+.CodeMirror .cm-highlight-error {
+    background: rgb(245, 89, 89); /* 75% red */
+    color: #ffffff !important; /* force white text on highlight */
+    border-radius: 0;
+    padding: 0 4px;
+    display: inline-block;
+    line-height: 1.4;
+    box-shadow: none;
+}
+
+/* Slight emphasis when the editor or selection is focused */
+.CodeMirror-focused .cm-highlight-warning { box-shadow: 0 2px 8px rgba(255,193,7,0.08); }
+.CodeMirror-focused .cm-highlight-error { box-shadow: 0 2px 8px rgba(244,67,54,0.06); }
+
+/* ============================================
+   SETTINGS MODAL ENHANCEMENTS
+   ============================================ */
+
+.settings-modal-content {
+    max-width: 900px !important;
+    max-height: 90vh;
+}
+
+/* Glassmorphism specifically for the confirm modal to make the popup
+   frosted and match the app's glass styling regardless of global state. */
+#confirmModal .modal-content {
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 12px 40px rgba(3,7,10,0.6);
+    border-radius: 12px;
+    color: var(--theme-text);
+}
+
+#confirmModal .modal-body {
+    color: var(--theme-textSecondary);
+}
+
+/* Make action buttons slightly elevated and keep their vivid accent */
+#confirmModal .modal-actions .btn {
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+
+/* Close button: keep square vibrant green for affordance but soften edges */
+#confirmModal .close-btn {
+    background: var(--theme-accent);
+    color: #ffffff;
+    border-radius: 6px;
+    border: none;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-modal-body {
+    max-height: calc(90vh - 150px);
+    overflow-y: auto;
+    padding: 25px !important;
+}
+
+.settings-section {
+    margin-bottom: 35px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid var(--theme-border);
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+}
+
+.settings-section h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--theme-text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.settings-section h3 i {
+    color: var(--theme-accent);
+}
+
+.section-description {
+    color: var(--theme-textSecondary);
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+/* ============================================
+   THEME GRID
+   ============================================ */
+
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+/* Ensure brand text remains visible even when responsive or other theme rules
+   attempt to hide text or use background-clip with transparent fill. This
+   override is intentionally specific and placed at the end of themes.css
+   (which is loaded last) so it wins against earlier rules. */
+.nav-brand .brand-name,
+html[data-theme] .nav-brand .brand-name {
+    display: inline-block !important;
+    color: var(--theme-text, #cccccc) !important;
+    -webkit-text-fill-color: unset !important; /* undo transparent fill */
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    background-image: none !important; /* avoid clipped gradient that could be invisible */
+    font-size: 16px !important;
+    opacity: 1 !important;
+}
+
+/* If per-letter jingle is present, ensure letters inherit visible color */
+.nav-brand .brand-name .letter {
+    color: inherit !important;
+    -webkit-text-fill-color: inherit !important;
+}
+
+.theme-card {
+    position: relative;
+    border: 2px solid var(--theme-border);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--theme-secondary);
+}
+
+.theme-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    border-color: var(--theme-accent);
+}
+
+.theme-card.active {
+    border-color: var(--theme-accent);
+    border-width: 3px;
+    box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.2);
+}
+
+.theme-preview {
+    height: 80px;
+    border-radius: 8px 8px 0 0;
+}
+
+.theme-info {
+    padding: 12px;
+    text-align: center;
+}
+
+.theme-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--theme-text);
+    margin-bottom: 4px;
+}
+
+.theme-type {
+    font-size: 11px;
+    color: var(--theme-textSecondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.theme-check {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    background: var(--theme-accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+}
+
+.theme-card.active .theme-check {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Editor breadcrumb (file > class > function) displayed above the editor */
+.editor-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+     /* Use a fixed monospaced font and fixed size (12px) so breadcrumb
+         remains constant even when editor font-size changes. Use explicit
+         white color to match editor text. */
+    font-family: var(--font-code) !important;
+     font-size: 12px !important;
+     color: var(--theme-accent) !important;
+    background: transparent; /* keep editor background visible */
+    margin-bottom: 6px;
+}
+/* Make breadcrumb horizontally scrollable via mouse wheel only and hide the slider
+   - keep items on a single line (no wrapping)
+   - hide visual scrollbars across browsers
+   - allow horizontal overflow for long file paths / deep symbols */
+.editor-breadcrumb {
+    overflow-x: auto; /* enable horizontal scrolling */
+    overflow-y: hidden; /* prevent vertical scroll */
+    white-space: nowrap; /* keep items in a single row */
+    flex-wrap: nowrap; /* prevent wrapping of flex children */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar in modern browsers */
+.editor-breadcrumb::-webkit-scrollbar { height: 0; display: none; }
+.editor-breadcrumb { scrollbar-width: none; -ms-overflow-style: none; }
+.editor-breadcrumb .bc-item {
+    background: transparent;
+    border: none;
+    color: var(--theme-accent) !important; /* use theme accent for path parts */
+    cursor: pointer;
+    padding: 0 4px; /* minimal padding to avoid badge look */
+    border-radius: 4px;
+    font-family: var(--font-code) !important;
+    font-size: 12px !important; /* fixed size */
+    line-height: 1.2;
+}
+.editor-breadcrumb .bc-item:hover { background: rgba(255,255,255,0.02); color: var(--theme-accent); }
+.editor-breadcrumb .bc-file { font-weight: 600; color: var(--theme-accent) !important; }
+.editor-breadcrumb .bc-sep { color: var(--theme-textSecondary) !important; font-size: 12px !important; padding: 0 6px; }
+
+/* Outline dropdown (View button) */
+.outline-dropdown {
+    position: absolute;
+    right: 6px; /* will be adjusted relative to the anchor button */
+    top: calc(100% + 6px);
+    /* Glassmorphism: frosted backdrop + subtle gradient */
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.06);
+    color: var(--theme-text);
+    min-width: 260px;
+    max-width: 420px;
+    z-index: 12000;
+    border-radius: 10px;
+    box-shadow: 0 18px 40px rgba(3,7,10,0.6);
+    padding: 12px;
+    /* ensure text is easily readable on frosted background */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Universal dropdown positioning helper
+   Apply a small downward offset from the trigger and ensure dropdowns sit above other UI elements.
+   Targets common dropdown-like containers by convention (class names used in the app). */
+.dropdown, .menu, .popover, .outline-dropdown, .theme-dropdown, .settings-menu {
+    position: absolute;
+    transform: translateY(6px); /* tiny visual gap so it doesn't collide with button */
+    z-index: 13000; /* above most UI layers */
+    box-shadow: 0 22px 50px rgba(3,7,10,0.6);
+}
+
+/* When a dropdown is anchored to a button, nudge it slightly further down to ensure a visible gap */
+.dropdown.anchored, .outline-dropdown.anchored {
+    transform: translateY(10px);
+}
+.outline-dropdown h4 { margin: 6px 0; font-size: 13px; color: var(--theme-text); }
+.outline-section { margin-bottom: 8px; }
+.outline-body { max-height: 340px; /* show approx 8-10 items depending on item height */
+    overflow: auto; padding-right: 6px; }
+.outline-list {
+    /* Use custom numbering so we can fully control marker placement
+       and ensure the accent bar appears to the left of the number. */
+    list-style: none;
+    counter-reset: outline-counter;
+    padding-left: 0;
+    margin: 6px 0;
+}
+.outline-list li {
+    /* left padding reserves space for the accent bar + numeric marker */
+    padding: 6px 12px 6px 56px;
+    cursor: pointer;
+    border-radius: 6px;
+    color: var(--theme-text);
+    font-family: var(--font-code);
+    font-size: 13px;
+    position: relative;
+    transition: background 160ms ease, color 160ms ease, border-color 160ms ease, padding-left 120ms ease;
+}
+
+/* Prevent long names from wrapping; allow horizontal scroll inside body */
+.outline-list li, .outline-list li * {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.outline-body {
+    overflow-x: auto;
+}
+
+/* Hover: accent left bar + accent marker/text color for clear highlight */
+.outline-list li:hover {
+    background: rgba(255,255,255,0.02);
+    color: var(--theme-accent) !important;
+    /* accent bar placed at the left-most edge (before the number) */
+    border-left: 3px solid var(--theme-accent);
+    /* keep padding so number stays visible to the right of the accent bar */
+    padding-left: 56px;
+    font-weight: 700;
+}
+
+/* Modern browsers: style the list marker and highlight it on hover */
+.outline-list li::before {
+    /* custom numeric marker placed inside the item's padded area */
+    counter-increment: outline-counter;
+    content: counter(outline-counter) '.';
+    position: absolute;
+    left: 12px; /* sits to the right of the accent bar (border-left) */
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--theme-textSecondary);
+    font-weight: 600;
+    font-family: var(--font-code);
+}
+
+/* accent the marker on hover */
+.outline-list li:hover::before {
+    color: var(--theme-accent) !important;
+    font-weight: 700;
+}
+.outline-list li:hover::marker {
+    color: var(--theme-accent) !important;
+}
+.outline-empty { color: var(--theme-textSecondary); font-size: 13px; padding: 6px; }
+
+/* Header token (e.g. def, class) and count badge */
+.outline-section h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    margin: 0 0 6px 0;
+}
+.outline-token {
+    color: var(--theme-accent);
+    font-family: var(--font-code, 'SFMono-Regular', Consolas, 'Roboto Mono', monospace);
+    background: transparent;
+    padding: 0 4px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+.outline-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    background: var(--theme-accent);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Custom scrollbar for the outline popup */
+.outline-body::-webkit-scrollbar { width: 10px; }
+.outline-body::-webkit-scrollbar-track { background: transparent; }
+.outline-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 6px; }
+.outline-body::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }
+
+/* Positioning helper for the status bar fileInfo area */
+.tab-bar { position: relative; }
+.icon-btn#viewOutlineBtn { display: inline-flex; align-items: center; gap:6px; }
+
+/* Hover fade: slightly lower opacity on hover to indicate interactivity */
+.icon-btn#viewOutlineBtn:hover { opacity: 0.88; transition: opacity 160ms ease; }
+
+/* When cycling modes, give the button a subtle pressed/active look */
+.icon-btn#viewOutlineBtn.mode-active { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
+
+
+.theme-check i {
+    color: white;
+    font-size: 14px;
+}
+
+/* ============================================
+   ACCENT COLOR CONTROLS
+   ============================================ */
+
+.accent-color-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.color-picker {
+    width: 80px;
+    height: 50px;
+    border: 2px solid var(--theme-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.color-picker:hover {
+    border-color: var(--theme-accent);
+    transform: scale(1.05);
+}
+
+.color-picker-label {
+    font-weight: 500;
+    color: var(--theme-text);
+}
+
+.preset-colors {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.preset-color {
+    width: 45px;
+    height: 45px;
+    border: 2px solid var(--theme-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.preset-color:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-color: white;
+}
+
+.preset-color::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: var(--theme-textSecondary);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.preset-color:hover::after {
+    opacity: 1;
+}
+
+/* ============================================
+   FONT CONTROLS
+   ============================================ */
+
+.font-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.setting-select {
+    width: 100%;
+    padding: 10px 15px;
+    background: var(--theme-secondary);
+    color: var(--theme-text);
+    border: 2px solid var(--theme-border);
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.setting-select:hover {
+    border-color: var(--theme-accent);
+}
+
+.setting-select:focus {
+    outline: none;
+    border-color: var(--theme-accent);
+    box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.2);
+}
+
+.font-preview {
+    margin-top: 10px;
+    padding: 15px;
+    background: var(--theme-primary);
+    border: 1px solid var(--theme-border);
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--theme-text);
+}
+
+.code-font-preview {
+    font-family: var(--font-code);
+}
+
+.ui-font-preview {
+    font-family: var(--font-ui);
+}
+
+/* ============================================
+   TOGGLE SWITCHES
+   ============================================ */
+
+.setting-toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.setting-hint {
+    font-size: 12px;
+    color: var(--theme-textSecondary);
+    margin-top: 4px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 56px;
+    height: 30px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--theme-tertiary);
+    border: 2px solid var(--theme-border);
+    transition: 0.4s;
+    border-radius: 30px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 2px;
+    bottom: 2px;
+    background: var(--theme-textSecondary);
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background: var(--theme-accent);
+    border-color: var(--theme-accent);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+    background: white;
+}
+
+input:disabled + .slider {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   INFO MESSAGES
+   ============================================ */
+
+.info-message {
+    padding: 12px 15px;
+    background: rgba(0, 122, 204, 0.1);
+    border-left: 3px solid var(--theme-accent);
+    border-radius: 4px;
+    color: var(--theme-text);
+    font-size: 13px;
+    margin-top: 15px;
+}
+
+.info-message i {
+    color: var(--theme-accent);
+    margin-right: 8px;
+}
+
+/* ============================================
+   SETTINGS ACTIONS
+   ============================================ */
+
+.settings-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ============================================
+   GLASSMORPHISM STYLES
+   ============================================ */
+
+.glassmorphism-enabled .panel,
+.glassmorphism-enabled .modal-content,
+.glassmorphism-enabled .panel-header,
+.glassmorphism-enabled .top-navbar,
+.glassmorphism-enabled .output-console,
+.glassmorphism-enabled .variable-item,
+.glassmorphism-enabled .history-item {
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.glassmorphism-enabled .container {
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.glassmorphism-enabled body {
+    background: linear-gradient(135deg, 
+        rgba(102, 126, 234, 0.3) 0%, 
+        rgba(118, 75, 162, 0.3) 100%),
+        var(--theme-background);
+}
+
+/* ============================================
+   CUSTOM RESIZER HANDLES
+   ============================================ */
+
+.gutter {
+    /* Thin default gutter */
+    background-color: var(--theme-border);
+    background-repeat: no-repeat;
+    background-position: 50%;
+    transition: background-color 0.15s, width 0.12s, height 0.12s;
+    box-sizing: border-box;
+}
+
+.gutter:hover {
+    background-color: var(--theme-accent);
+}
+
+/* Keep accent color while dragging/active */
+.gutter.gutter-dragging,
+.gutter:active {
+    background-color: var(--theme-accent) !important;
+}
+
+/* Horizontal gutter (between left/right) - thin by default */
+.gutter.gutter-horizontal, .gutter-horizontal {
+    cursor: col-resize;
+    width: 6px; /* thin */
+    min-width: 6px;
+    /* Allow the vertical divider (horizontal gutter class) to stretch
+       to the full height of its container so it visually meets the
+       fixed status bar. Keep changes limited to the gutter itself. */
+    align-self: stretch !important;
+    height: 100% !important;
+    min-height: calc(100vh - 36px) !important; /* reserve status bar */
+}
+
+/* Vertical gutter (between output/variables) - thin by default */
+.gutter.gutter-vertical {
+    cursor: row-resize;
+    height: 6px; /* thin */
+    min-height: 6px;
+}
+
+/* Keep gutters thin at all times; accent color is applied on hover/drag via .gutter-dragging and :active */
+.gutter.gutter-dragging,
+.gutter:active {
+    /* no size change here - keep thin */
+    background-color: var(--theme-accent) !important;
+}
+
+/* Split.js gutter styling */
+.gutter-horizontal {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+}
+
+.gutter-vertical {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFCAMAAABl/6zIAAAABlBMVEUAAADMzMzIT8AyAAAAAXRSTlMAQObYZgAAABRJREFUeAFjYGRkZGJkZGRgZGQAABIAAUzk/TsAAAAASUVORK5CYII=');
+}
+
+/* ============================================
+   TOAST NOTIFICATIONS
+   ============================================ */
+
+.toast-container {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+}
+
+.toast {
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 30px rgba(6, 11, 14, 0.6);
+    backdrop-filter: blur(8px) saturate(140%);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
+    animation: slideInRight 0.3s ease;
+    opacity: 1;
+    transition: opacity 0.3s, transform 0.25s;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.toast-success {
+    border-left: 4px solid var(--theme-success);
+}
+
+.toast-error {
+    border-left: 4px solid var(--theme-error);
+}
+
+.toast-warning {
+    border-left: 4px solid var(--theme-warning);
+}
+
+.toast-info {
+    border-left: 4px solid var(--theme-info);
+}
+
+.toast-icon {
+    font-size: 20px;
+}
+
+.toast-success .toast-icon {
+    color: var(--theme-success);
+}
+
+.toast-error .toast-icon {
+    color: var(--theme-error);
+}
+
+.toast-warning .toast-icon {
+    color: var(--theme-warning);
+}
+
+.toast-info .toast-icon {
+    color: var(--theme-info);
+}
+
+.toast-content {
+    flex: 1;
+}
+
+.toast-message {
+    color: var(--theme-text);
+    font-size: 14px;
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    color: var(--theme-textSecondary);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    transition: color 0.3s;
+}
+
+.toast-close:hover {
+    color: var(--theme-text);
+}
+
+/* Apply glass look to info messages and generic popups */
+.info-message {
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    backdrop-filter: blur(6px) saturate(130%);
+    -webkit-backdrop-filter: blur(6px) saturate(130%);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    color: var(--theme-text);
+}
+
+/* More pronounced glass style for modals/popups */
+.settings-modal-content,
+.modal-content,
+.panel {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    border-radius: 12px;
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    box-shadow: 0 12px 40px rgba(3,7,10,0.6);
+}
+
+/* Slight lift on hover for toast to emphasize layering */
+.toast:hover {
+    transform: translateY(-6px);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .settings-modal-content {
+        max-width: 95vw !important;
+        margin: 10px;
+    }
+
+    .theme-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+
+    .preset-colors {
+        gap: 8px;
+    }
+
+    .preset-color {
+        width: 40px;
+        height: 40px;
+    }
+
+    .settings-actions {
+        flex-direction: column;
+    }
+
+    .settings-actions .btn {
+        width: 100%;
+    }
+
+    .toast-container {
+        left: 10px;
+        right: 10px;
+        max-width: none;
+    }
+}
+
+/* ============================================
+   BUTTON ENHANCEMENTS
+   ============================================ */
+
+.btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* ============================================
+   ANIMATION CLASSES
+   ============================================ */
+
+.fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.slide-up {
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   SCROLLBAR THEMING
+   ============================================ */
+
+.settings-modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.settings-modal-body::-webkit-scrollbar-track {
+    background: var(--theme-primary);
+    border-radius: 4px;
+}
+
+.settings-modal-body::-webkit-scrollbar-thumb {
+    background: var(--theme-tertiary);
+    border-radius: 4px;
+}
+
+.settings-modal-body::-webkit-scrollbar-thumb:hover {
+    background: var(--theme-accent);
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--theme-accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   SPOTIFY MODAL - Modern styling
+   ============================================ */
+
+:root {
+    --spotify-accent: #f08a24; /* warm orange */
+    --spotify-btn-shadow: rgba(176, 84, 20, 0.24);
+    --spotify-bg-panel: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+}
+
+/* Modal content override for Spotify modal to make it feel like a modern card */
+.spotify-modal-content {
+    max-width: 980px;
+    padding: 18px 18px 16px 18px;
+    border-radius: 14px;
+    background: var(--spotify-bg-panel);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 24px 60px rgba(3,7,10,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
+    color: var(--theme-text);
+}
+
+.spotify-modal-content .modal-header h2 {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:18px;
+    margin:0;
+}
+
+/* Search input - subtle inset with soft border */
+.spotify-search input[type="search"] {
+    background: rgba(0,0,0,0.38);
+    border: 1px solid rgba(255,255,255,0.04);
+    padding: 12px 14px;
+    border-radius: 8px;
+    color: var(--theme-text);
+    outline: none;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
+}
+.spotify-search input[type="search"]::placeholder { color: rgba(255,255,255,0.28); }
+
+.spotify-search .spotify-search-actions { display:flex; gap:10px; align-items:center; margin-top:8px }
+
+/* Playback control row */
+.spotify-playback { width: 100%; align-items: center; }
+.spotify-playback .btn {
+    border: none;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: linear-gradient(180deg, var(--spotify-accent), #d86610);
+    box-shadow: 0 8px 22px var(--spotify-btn-shadow);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+}
+.spotify-playback .btn.btn-secondary { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.12)); color: var(--theme-text); border: 1px solid rgba(255,255,255,0.03); box-shadow: none }
+.spotify-playback .btn.btn-primary { min-width:44px; min-height:44px; border-radius:10px; background: linear-gradient(180deg, var(--spotify-accent), #d86610); }
+.spotify-playback .btn:hover { transform: translateY(-3px); }
+
+/* Now playing text */
+#spotifyNowPlaying { color: var(--theme-textSecondary); margin-left: 12px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px }
+
+/* Small cover image in playback row */
+.spotify-cover {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.03);
+}
+
+/* Compact control buttons when using the spotify-ctrl class */
+.spotify-ctrl {
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 6px !important;
+}
+
+/* Slightly more translucent glass for the spotify modal */
+.spotify-modal-content {
+    backdrop-filter: blur(14px) saturate(170%);
+    -webkit-backdrop-filter: blur(14px) saturate(170%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Device select as pill */
+#spotifyDeviceSelect {
+    background: rgba(0,0,0,0.6);
+    color: var(--theme-text);
+    border: 1px solid rgba(255,255,255,0.04);
+    padding: 8px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    margin-left: 12px;
+}
+
+/* Seek container layout tweaks */
+#spotifySeekContainer { display:flex; align-items:center; gap:12px; margin-left:12px; }
+#spotifyCurrentTime, #spotifyTotalTime { color: var(--theme-textSecondary); font-size:12px; min-width:38px; text-align:center }
+
+/* Custom range (seek slider) */
+#spotifySeekSlider { -webkit-appearance:none; appearance:none; height:10px; background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); border-radius:999px; outline:none; }
+#spotifySeekSlider::-webkit-slider-runnable-track { height:10px; background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); border-radius:999px; }
+#spotifySeekSlider::-moz-range-track { height:10px; background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); border-radius:999px; }
+
+/* Filled portion - use an overlay trick by applying background size in JS if needed; keep visual friendly fallback */
+#spotifySeekSlider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:18px; height:18px; border-radius:50%; background:#1da1f2; box-shadow: 0 6px 18px rgba(29,161,242,0.24); margin-top: -4px; border: 3px solid rgba(255,255,255,0.9); }
+#spotifySeekSlider::-moz-range-thumb { width:18px; height:18px; border-radius:50%; background:#1da1f2; box-shadow: 0 6px 18px rgba(29,161,242,0.24); border: 3px solid rgba(255,255,255,0.9); }
+
+/* Make the track taller on hover for affordance */
+#spotifySeekSlider:hover { height: 12px; }
+
+/* Responsive: compress controls on narrow viewports */
+@media (max-width: 720px) {
+    .spotify-modal-content { padding: 12px; }
+    #spotifyNowPlaying { display:none; }
+    #spotifySeekContainer { margin-left:8px; }
+    .spotify-playback .btn { min-width:40px; min-height:40px; }
+}
+
+
+/* ============================================
+   UI FONT SIZE APPLICATION
+   ============================================ */
+
+body,
+.navbar,
+.panel,
+.panel-header,
+.panel-title,
+.settings-group,
+.settings-label,
+.settings-modal,
+.output-text,
+.variables-list,
+.terminal-container {
+    font-size: var(--font-size-ui) !important;
+}
+
+/* ============================================
+   BUTTON ACCENT COLOR ADAPTATION
+   ============================================ */
+
+/* Primary buttons */
+button:not(.theme-card):not(.color-preset),
+.btn-primary,
+.btn-action,
+.run-btn,
+.clear-btn,
+.settings-btn,
+input[type="submit"],
+input[type="button"] {
+    background: var(--theme-accent) !important;
+    border-color: var(--theme-accent) !important;
+    color: #ffffff !important;
+    transition: all 0.3s ease;
+}
+
+button:not(.theme-card):not(.color-preset):hover,
+.btn-primary:hover,
+.btn-action:hover,
+.run-btn:hover,
+.clear-btn:hover,
+.settings-btn:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+    background: var(--theme-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Secondary/Icon buttons */
+.btn-icon,
+.navbar-btn,
+.toolbar-btn {
+    color: var(--theme-accent) !important;
+    border-color: var(--theme-accent) !important;
+}
+
+.btn-icon:hover,
+.navbar-btn:hover,
+.toolbar-btn:hover {
+    background: var(--theme-accent) !important;
+    color: #ffffff !important;
+}
+
+/* Active/Selected state */
+button.active,
+.btn.active {
+    background: var(--theme-accent) !important;
+    border-color: var(--theme-accent) !important;
+    color: #ffffff !important;
+}
+

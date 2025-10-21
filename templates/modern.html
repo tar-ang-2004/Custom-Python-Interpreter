@@ -1,0 +1,3918 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyCode Studio - Modern Python Interpreter</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        dark: {
+                            bg: '#0a0e1a',
+                            surface: '#111827',
+                            card: '#1f2937',
+                            hover: '#374151',
+                        },
+                        // Light theme colors
+                        light: {
+                            bg: '#f9fafb',
+                            surface: '#ffffff',
+                            card: '#f3f4f6',
+                            hover: '#e5e7eb',
+                        },
+                        // High contrast theme colors
+                        contrast: {
+                            bg: '#000000',
+                            surface: '#1a1a1a',
+                            card: '#0d0d0d',
+                            hover: '#262626',
+                        },
+                        // Theme-specific accent colors
+                        monokai: {
+                            bg: '#272822',
+                            primary: '#f92672',
+                            secondary: '#66d9ef',
+                            accent: '#a6e22e',
+                        },
+                        dracula: {
+                            bg: '#282a36',
+                            primary: '#ff79c6',
+                            secondary: '#8be9fd',
+                            accent: '#50fa7b',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'slide-down': 'slideDown 0.3s ease-out',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-subtle': 'bounceSubtle 1s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        slideDown: {
+                            '0%': { transform: 'translateY(-10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px #0ea5e9, 0 0 10px #0ea5e9' },
+                            '100%': { boxShadow: '0 0 10px #0ea5e9, 0 0 20px #0ea5e9, 0 0 30px #0ea5e9' },
+                        },
+                        bounceSubtle: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' },
+                        }
+                    }
+                }
+            },
+            darkMode: 'class',
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <style>
+        /* Import Fira Code font for ligatures */
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+        
+        /* Code Editor Styling */
+        .code-editor {
+            font-family: 'Fira Code', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            font-feature-settings: "liga" 1, "calt" 1; /* Enable ligatures */
+        }
+        
+        /* Smooth Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--scrollbar-thumb-hover);
+        }
+        
+        /* Glass morphism effect */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+        }
+        
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Theme Variables */
+        :root {
+            --scrollbar-track: #1f2937;
+            --scrollbar-thumb: #4b5563;
+            --scrollbar-thumb-hover: #6b7280;
+            --glass-bg: rgba(31, 41, 55, 0.7);
+            --glass-border: rgba(75, 85, 99, 0.3);
+            --prompt-bg: rgba(14, 165, 233, 0.1);
+            --prompt-border: #0ea5e9;
+            --input-icon-color: #0ea5e9;
+            --output-icon-color: #10b981;
+            --error-icon-color: #ef4444;
+        }
+        
+        /* Light Theme */
+        body.theme-light {
+            --scrollbar-track: #e5e7eb;
+            --scrollbar-thumb: #9ca3af;
+            --scrollbar-thumb-hover: #6b7280;
+            --glass-bg: rgba(243, 244, 246, 0.7);
+            --glass-border: rgba(209, 213, 219, 0.5);
+            --prompt-bg: rgba(14, 165, 233, 0.05);
+            --prompt-border: #0284c7;
+        }
+        
+        /* High Contrast Theme */
+        body.theme-contrast {
+            --scrollbar-track: #000000;
+            --scrollbar-thumb: #404040;
+            --scrollbar-thumb-hover: #606060;
+            --glass-bg: rgba(13, 13, 13, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --prompt-bg: rgba(255, 255, 255, 0.05);
+            --prompt-border: #ffffff;
+            --input-icon-color: #00d4ff;
+            --output-icon-color: #00ff88;
+            --error-icon-color: #ff0055;
+        }
+        
+        /* Monokai Theme */
+        body.theme-monokai {
+            --scrollbar-track: #1e1f1c;
+            --scrollbar-thumb: #49483e;
+            --scrollbar-thumb-hover: #75715e;
+            --glass-bg: rgba(39, 40, 34, 0.8);
+            --glass-border: rgba(102, 217, 239, 0.2);
+            --prompt-bg: rgba(249, 38, 114, 0.1);
+            --prompt-border: #f92672;
+            --input-icon-color: #66d9ef;
+            --output-icon-color: #a6e22e;
+            --error-icon-color: #f92672;
+        }
+        
+        /* Dracula Theme */
+        body.theme-dracula {
+            --scrollbar-track: #21222c;
+            --scrollbar-thumb: #44475a;
+            --scrollbar-thumb-hover: #6272a4;
+            --glass-bg: rgba(40, 42, 54, 0.8);
+            --glass-border: rgba(139, 233, 253, 0.2);
+            --prompt-bg: rgba(255, 121, 198, 0.1);
+            --prompt-border: #ff79c6;
+            --input-icon-color: #8be9fd;
+            --output-icon-color: #50fa7b;
+            --error-icon-color: #ff5555;
+        }
+        
+        /* Stylized Prompt */
+        .terminal-prompt {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--prompt-bg);
+            border-left: 3px solid var(--prompt-border);
+            border-radius: 0.375rem;
+            font-family: 'Fira Code', monospace;
+            margin-bottom: 0.5rem;
+        }
+        
+        .prompt-icon {
+            width: 1rem;
+            height: 1rem;
+            color: var(--prompt-border);
+        }
+        
+        .prompt-text {
+            color: var(--prompt-border);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .prompt-info {
+            color: #9ca3af;
+            font-size: 0.75rem;
+            margin-left: auto;
+        }
+        
+        /* Input/Output Labels */
+        .io-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .io-label-input {
+            background: rgba(14, 165, 233, 0.15);
+            color: var(--input-icon-color);
+            border: 1px solid var(--input-icon-color);
+        }
+        
+        .io-label-output {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--output-icon-color);
+            border: 1px solid var(--output-icon-color);
+        }
+        
+        .io-label-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--error-icon-color);
+            border: 1px solid var(--error-icon-color);
+        }
+        
+        .io-icon {
+            width: 0.875rem;
+            height: 0.875rem;
+        }
+        
+        /* Syntax Highlighting Colors */
+        .syntax-keyword { color: #ff79c6; font-weight: 600; }
+        .syntax-string { color: #50fa7b; }
+        .syntax-number { color: #bd93f9; }
+        .syntax-function { color: #8be9fd; }
+        .syntax-comment { color: #6272a4; font-style: italic; }
+        
+        /* Autocomplete & IntelliSense */
+        .autocomplete-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .autocomplete-popup {
+            position: absolute;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            min-width: 250px;
+            animation: slideDown 0.2s ease-out;
+        }
+        
+        .autocomplete-item {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.15s ease;
+            border-bottom: 1px solid rgba(75, 85, 99, 0.2);
+        }
+        
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        
+        .autocomplete-item:hover,
+        .autocomplete-item.selected {
+            background: rgba(14, 165, 233, 0.2);
+        }
+        
+        .autocomplete-icon {
+            width: 1rem;
+            height: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .autocomplete-icon.function { color: #8be9fd; }
+        .autocomplete-icon.variable { color: #bd93f9; }
+        .autocomplete-icon.keyword { color: #ff79c6; }
+        .autocomplete-icon.method { color: #50fa7b; }
+        
+        .autocomplete-name {
+            font-family: 'Fira Code', monospace;
+            font-weight: 500;
+            color: #e5e7eb;
+            flex: 1;
+        }
+        
+        .autocomplete-type {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            font-family: 'Fira Code', monospace;
+        }
+        
+        .autocomplete-hint {
+            font-size: 0.7rem;
+            color: #6b7280;
+            margin-left: auto;
+        }
+        
+        /* Signature Help Popup */
+        .signature-popup {
+            position: absolute;
+            background: rgba(31, 41, 55, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid #0ea5e9;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            max-width: 500px;
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        .signature-function {
+            font-family: 'Fira Code', monospace;
+            color: #8be9fd;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .signature-params {
+            font-family: 'Fira Code', monospace;
+            color: #e5e7eb;
+            font-size: 0.875rem;
+        }
+        
+        .signature-param-active {
+            color: #0ea5e9;
+            font-weight: 700;
+            text-decoration: underline;
+        }
+        
+        .signature-description {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        /* Command Palette */
+        .command-palette-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 10vh;
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        .command-palette {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--glass-border);
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            width: 90%;
+            max-width: 600px;
+            max-height: 70vh;
+            display: flex;
+            flex-direction: column;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        .command-palette-input {
+            padding: 1rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid rgba(75, 85, 99, 0.3);
+            color: #e5e7eb;
+            font-size: 1.125rem;
+            font-family: 'Fira Code', monospace;
+            outline: none;
+        }
+        
+        .command-palette-input::placeholder {
+            color: #6b7280;
+        }
+        
+        .command-palette-results {
+            overflow-y: auto;
+            max-height: calc(70vh - 80px);
+        }
+        
+        .command-palette-item {
+            padding: 0.875rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.15s ease;
+            border-bottom: 1px solid rgba(75, 85, 99, 0.1);
+        }
+        
+        .command-palette-item:hover,
+        .command-palette-item.selected {
+            background: rgba(14, 165, 233, 0.2);
+        }
+        
+        .command-palette-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: #0ea5e9;
+            flex-shrink: 0;
+        }
+        
+        .command-palette-content {
+            flex: 1;
+        }
+        
+        .command-palette-title {
+            font-weight: 600;
+            color: #e5e7eb;
+            margin-bottom: 0.125rem;
+        }
+        
+        .command-palette-description {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+        
+        .command-palette-shortcut {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-family: 'Fira Code', monospace;
+            padding: 0.125rem 0.375rem;
+            background: rgba(75, 85, 99, 0.3);
+            border-radius: 0.25rem;
+        }
+        
+        /* Smart Error Hints */
+        .error-hint-container {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .error-hint-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .error-hint-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: #ef4444;
+        }
+        
+        .error-hint-title {
+            font-weight: 600;
+            color: #fca5a5;
+        }
+        
+        .error-hint-message {
+            color: #fca5a5;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            padding-left: 1.75rem;
+        }
+        
+        .error-hint-line {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            margin-bottom: 0.75rem;
+            padding-left: 1.75rem;
+        }
+        
+        .error-hint-line-number {
+            color: #9ca3af;
+            margin-right: 0.5rem;
+        }
+        
+        .error-hint-code {
+            color: #e5e7eb;
+            font-family: 'Fira Code', monospace;
+        }
+        
+        .error-hint-pointer {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        
+        .error-hint-suggestions {
+            padding-left: 1.75rem;
+        }
+        
+        .error-hint-suggestion-title {
+            color: #60a5fa;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .error-hint-suggestion {
+            color: #9ca3af;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+            padding-left: 1rem;
+            position: relative;
+        }
+        
+        .error-hint-suggestion:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #60a5fa;
+        }
+        
+        .error-hint-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.375rem 0.75rem;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3b82f6;
+            border-radius: 0.375rem;
+            color: #60a5fa;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: 1.75rem;
+            margin-top: 0.5rem;
+        }
+        
+        .error-hint-action:hover {
+            background: rgba(59, 130, 246, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        /* Documentation Popup */
+        .docs-popup {
+            position: absolute;
+            background: rgba(31, 41, 55, 0.98);
+            backdrop-filter: blur(15px);
+            border: 1px solid #0ea5e9;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
+            z-index: 1002;
+            max-width: 400px;
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        .docs-popup-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+        }
+        
+        .docs-popup-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: #0ea5e9;
+        }
+        
+        .docs-popup-title {
+            font-family: 'Fira Code', monospace;
+            font-weight: 700;
+            color: #8be9fd;
+            font-size: 1rem;
+        }
+        
+        .docs-popup-signature {
+            font-family: 'Fira Code', monospace;
+            color: #e5e7eb;
+            font-size: 0.875rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .docs-popup-description {
+            color: #d1d5db;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+        
+        .docs-popup-params {
+            margin-bottom: 0.5rem;
+        }
+        
+        .docs-popup-param-title {
+            color: #60a5fa;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.375rem;
+        }
+        
+        .docs-popup-param {
+            color: #9ca3af;
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
+            padding-left: 1rem;
+        }
+        
+        .docs-popup-param-name {
+            color: #bd93f9;
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+        }
+        
+        .docs-popup-example {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            color: #50fa7b;
+            margin-top: 0.5rem;
+        }
+        
+        .docs-popup-footer {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(75, 85, 99, 0.3);
+            font-size: 0.7rem;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        /* ========================================
+           INFORMATION VISUALIZATION STYLES
+           ======================================== */
+        
+        /* Variable Explorer - Expandable Objects */
+        .variable-item {
+            background: rgba(31, 41, 55, 0.6);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .variable-item:hover {
+            background: rgba(55, 65, 81, 0.6);
+            border-color: rgba(96, 165, 250, 0.5);
+            transform: translateX(2px);
+        }
+        
+        .variable-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .variable-name {
+            font-family: 'Fira Code', monospace;
+            color: #bd93f9;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .variable-type {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        
+        .variable-type.type-str { background: rgba(80, 250, 123, 0.2); color: #50fa7b; }
+        .variable-type.type-int { background: rgba(189, 147, 249, 0.2); color: #bd93f9; }
+        .variable-type.type-float { background: rgba(139, 233, 253, 0.2); color: #8be9fd; }
+        .variable-type.type-bool { background: rgba(255, 184, 108, 0.2); color: #ffb86c; }
+        .variable-type.type-list { background: rgba(255, 121, 198, 0.2); color: #ff79c6; }
+        .variable-type.type-dict { background: rgba(241, 250, 140, 0.2); color: #f1fa8c; }
+        .variable-type.type-tuple { background: rgba(139, 233, 253, 0.2); color: #8be9fd; }
+        .variable-type.type-set { background: rgba(255, 85, 85, 0.2); color: #ff5555; }
+        .variable-type.type-object { background: rgba(98, 114, 164, 0.2); color: #6272a4; }
+        
+        .variable-value {
+            color: #f8f8f2;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+            margin-left: 0.5rem;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .variable-size {
+            color: #6272a4;
+            font-size: 0.75rem;
+            margin-left: auto;
+        }
+        
+        .variable-expand-icon {
+            width: 1rem;
+            height: 1rem;
+            color: #9ca3af;
+            transition: transform 0.2s;
+            margin-left: 0.5rem;
+        }
+        
+        .variable-expand-icon.expanded {
+            transform: rotate(90deg);
+        }
+        
+        .variable-details {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(75, 85, 99, 0.3);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .variable-details.expanded {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .variable-detail-item {
+            display: flex;
+            padding: 0.25rem 0;
+            font-size: 0.8rem;
+        }
+        
+        .variable-detail-key {
+            color: #8be9fd;
+            font-family: 'Fira Code', monospace;
+            min-width: 100px;
+        }
+        
+        .variable-detail-value {
+            color: #f1fa8c;
+            font-family: 'Fira Code', monospace;
+            flex: 1;
+        }
+        
+        /* Execution Stats Panel */
+        .stats-panel {
+            background: linear-gradient(135deg, rgba(31, 41, 55, 0.8) 0%, rgba(17, 24, 39, 0.8) 100%);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+        }
+        
+        .stat-item {
+            background: rgba(55, 65, 81, 0.4);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-item:hover {
+            background: rgba(55, 65, 81, 0.6);
+            border-color: rgba(96, 165, 250, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .stat-label {
+            color: #9ca3af;
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-value {
+            color: #f8f8f2;
+            font-size: 1.25rem;
+            font-weight: 700;
+            font-family: 'Fira Code', monospace;
+        }
+        
+        .stat-value.stat-time { color: #50fa7b; }
+        .stat-value.stat-memory { color: #ffb86c; }
+        .stat-value.stat-cpu { color: #ff79c6; }
+        
+        .stat-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Command History Panel */
+        .history-panel {
+            background: rgba(31, 41, 55, 0.6);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+        
+        .history-header {
+            background: rgba(17, 24, 39, 0.8);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .history-search {
+            background: rgba(55, 65, 81, 0.6);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            color: #f8f8f2;
+            font-size: 0.875rem;
+            width: 100%;
+            outline: none;
+        }
+        
+        .history-search:focus {
+            border-color: rgba(96, 165, 250, 0.5);
+        }
+        
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+        
+        .history-item {
+            background: rgba(55, 65, 81, 0.4);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .history-item:hover {
+            background: rgba(55, 65, 81, 0.6);
+            border-color: rgba(96, 165, 250, 0.5);
+            transform: translateX(4px);
+        }
+        
+        .history-item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .history-item-time {
+            color: #6272a4;
+            font-size: 0.75rem;
+        }
+        
+        .history-item-code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+            color: #f8f8f2;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            overflow-x: auto;
+        }
+        
+        .history-item-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .history-action-btn {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .history-action-btn.run {
+            background: rgba(80, 250, 123, 0.2);
+            color: #50fa7b;
+        }
+        
+        .history-action-btn.run:hover {
+            background: rgba(80, 250, 123, 0.3);
+        }
+        
+        .history-action-btn.edit {
+            background: rgba(139, 233, 253, 0.2);
+            color: #8be9fd;
+        }
+        
+        .history-action-btn.edit:hover {
+            background: rgba(139, 233, 253, 0.3);
+        }
+        
+        .history-action-btn.delete {
+            background: rgba(255, 85, 85, 0.2);
+            color: #ff5555;
+        }
+        
+        .history-action-btn.delete:hover {
+            background: rgba(255, 85, 85, 0.3);
+        }
+        
+        /* Tab System */
+        .tabs-container {
+            display: flex;
+            background: rgba(17, 24, 39, 0.8);
+            border-bottom: 1px solid rgba(75, 85, 99, 0.5);
+            overflow-x: auto;
+            padding: 0.5rem 0.5rem 0 0.5rem;
+        }
+        
+        .tab-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: rgba(55, 65, 81, 0.3);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            border-bottom: none;
+            border-radius: 0.5rem 0.5rem 0 0;
+            color: #9ca3af;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            margin-right: 0.25rem;
+        }
+        
+        .tab-item:hover {
+            background: rgba(55, 65, 81, 0.5);
+            color: #f8f8f2;
+        }
+        
+        .tab-item.active {
+            background: rgba(96, 165, 250, 0.2);
+            border-color: rgba(96, 165, 250, 0.5);
+            color: #60a5fa;
+        }
+        
+        .tab-close {
+            width: 1rem;
+            height: 1rem;
+            padding: 0;
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .tab-close:hover {
+            color: #ff5555;
+        }
+        
+        .tab-add {
+            padding: 0.75rem;
+            background: rgba(80, 250, 123, 0.2);
+            border: 1px solid rgba(80, 250, 123, 0.3);
+            border-radius: 0.5rem;
+            color: #50fa7b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: 0.5rem;
+        }
+        
+        .tab-add:hover {
+            background: rgba(80, 250, 123, 0.3);
+        }
+        
+        /* Output Renderer */
+        .output-dataframe {
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .output-dataframe table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            font-family: 'Fira Code', monospace;
+        }
+        
+        .output-dataframe th {
+            background: rgba(96, 165, 250, 0.2);
+            color: #60a5fa;
+            padding: 0.5rem;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid rgba(75, 85, 99, 0.3);
+        }
+        
+        .output-dataframe td {
+            padding: 0.5rem;
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            color: #f8f8f2;
+        }
+        
+        .output-dataframe tr:hover {
+            background: rgba(55, 65, 81, 0.4);
+        }
+        
+        .output-chart {
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid rgba(75, 85, 99, 0.3);
+        }
+        
+        .output-json {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .output-image {
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            max-width: 100%;
+        }
+        
+        .json-key {
+            color: #8be9fd;
+        }
+        
+        .json-string {
+            color: #f1fa8c;
+        }
+        
+        .json-number {
+            color: #bd93f9;
+        }
+        
+        .json-boolean {
+            color: #ffb86c;
+        }
+        
+        .json-null {
+            color: #6272a4;
+        }
+        
+        /* ===================================
+           Phase 4: Delight & Micro-Interactions
+           =================================== */
+        
+        /* A. Animated Feedback */
+        
+        /* Focus animations for code editor */
+        #codeEditor:focus {
+            animation: editorFocusPulse 0.5s ease-out;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.3);
+        }
+        
+        @keyframes editorFocusPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.5);
+            }
+            70% {
+                box-shadow: 0 0 0 8px rgba(14, 165, 233, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.3);
+            }
+        }
+        
+        /* Success checkmark animation */
+        @keyframes checkmarkDraw {
+            0% {
+                stroke-dashoffset: 50;
+            }
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+        
+        .checkmark-animated {
+            stroke-dasharray: 50;
+            stroke-dashoffset: 50;
+            animation: checkmarkDraw 0.5s ease-out forwards;
+        }
+        
+        /* Progress bar with spinner */
+        .progress-container {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(17, 24, 39, 0.5);
+            z-index: 45;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress-container.active {
+            display: block;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #0ea5e9, #8b5cf6, #ec4899);
+            background-size: 200% 100%;
+            animation: progressShimmer 1.5s ease-in-out infinite;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        @keyframes progressShimmer {
+            0% {
+                background-position: 100% 0;
+            }
+            100% {
+                background-position: -100% 0;
+            }
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(14, 165, 233, 0.3);
+            border-top-color: #0ea5e9;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* B. Visual Success/Error Cues */
+        
+        .status-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: statusPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes statusPop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .status-icon.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+        }
+        
+        .status-icon.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+            animation: statusPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), shake 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-5px);
+            }
+            75% {
+                transform: translateX(5px);
+            }
+        }
+        
+        .status-icon.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+        }
+        
+        /* Fire icon animation for errors */
+        @keyframes flicker {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+        
+        .fire-icon {
+            animation: flicker 0.3s ease-in-out infinite;
+        }
+        
+        /* C. Toast Notifications Enhancement */
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            min-width: 300px;
+            max-width: 400px;
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            animation: toastSlideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes toastSlideIn {
+            0% {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .toast.removing {
+            animation: toastSlideOut 0.3s ease-out forwards;
+        }
+        
+        @keyframes toastSlideOut {
+            0% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+        
+        .toast-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .toast-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-left: 8px;
+            flex: 1;
+        }
+        
+        .toast-close {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .toast-close:hover {
+            background: rgba(75, 85, 99, 0.5);
+        }
+        
+        .toast-body {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(14, 165, 233, 0.3);
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+        }
+        
+        .toast-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #0ea5e9, #8b5cf6);
+            animation: toastProgress 3s linear forwards;
+        }
+        
+        @keyframes toastProgress {
+            0% {
+                width: 100%;
+            }
+            100% {
+                width: 0%;
+            }
+        }
+        
+        /* Sound/notification option (visual only) */
+        .ding-animation {
+            animation: dingBounce 0.6s ease-out;
+        }
+        
+        @keyframes dingBounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            25% {
+                transform: scale(1.1) rotate(-5deg);
+            }
+            50% {
+                transform: scale(0.95) rotate(5deg);
+            }
+            75% {
+                transform: scale(1.05) rotate(-3deg);
+            }
+        }
+        
+        /* D. Welcome Screen */
+        
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #0a0e1a 0%, #111827 50%, #1f2937 100%);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .welcome-screen.hiding {
+            animation: fadeOut 0.5s ease-out forwards;
+        }
+        
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+        
+        .welcome-content {
+            text-align: center;
+            max-width: 600px;
+            padding: 40px;
+            animation: slideUp 0.7s ease-out;
+        }
+        
+        .welcome-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 60px rgba(14, 165, 233, 0.4);
+            animation: logoPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes logoPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 20px 60px rgba(14, 165, 233, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 25px 80px rgba(14, 165, 233, 0.6);
+            }
+        }
+        
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #0ea5e9, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .welcome-version {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 24px;
+        }
+        
+        .welcome-shortcuts {
+            background: rgba(17, 24, 39, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: left;
+        }
+        
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .shortcut-key {
+            background: rgba(75, 85, 99, 0.5);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .welcome-start-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(14, 165, 233, 0.4);
+        }
+        
+        .welcome-start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(14, 165, 233, 0.6);
+        }
+        
+        .welcome-start-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Button animations */
+        .button-click-effect {
+            animation: buttonClick 0.3s ease-out;
+        }
+        
+        @keyframes buttonClick {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(0.95);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        /* Ripple effect for buttons */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: rippleEffect 0.6s ease-out;
+            pointer-events: none;
+        }
+        
+        @keyframes rippleEffect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* Enhanced button styles */
+        button, .btn {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Input focus animations */
+        input:focus, textarea:focus, select:focus {
+            animation: inputFocusGlow 0.3s ease-out;
+        }
+        
+        @keyframes inputFocusGlow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.5);
+            }
+            100% {
+                box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-dark-bg via-gray-900 to-dark-bg text-gray-100 min-h-screen">
+    
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen" class="welcome-screen">
+        <div class="welcome-content">
+            <div class="welcome-logo">
+                <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                </svg>
+            </div>
+            <h1 class="welcome-title">PyCode Studio</h1>
+            <p class="welcome-version">Version 2.1.0 - Professional Python IDE</p>
+            
+            <div class="welcome-shortcuts">
+                <h3 style="font-weight: 600; margin-bottom: 12px; color: rgba(255,255,255,0.9);">⌨️ Quick Shortcuts</h3>
+                <div class="shortcut-item">
+                    <span>Run Code</span>
+                    <span class="shortcut-key">Ctrl+Enter</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Clear Output</span>
+                    <span class="shortcut-key">Ctrl+L</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Command Palette</span>
+                    <span class="shortcut-key">Ctrl+Shift+P</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Reset Interpreter</span>
+                    <span class="shortcut-key">Ctrl+Shift+R</span>
+                </div>
+            </div>
+            
+            <button class="welcome-start-btn" onclick="startNewSession()">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Start New Session
+            </button>
+        </div>
+    </div>
+    
+    <!-- Progress Bar with Spinner -->
+    <div id="progressContainer" class="progress-container">
+        <div id="progressBar" class="progress-bar"></div>
+    </div>
+    
+    <!-- Header with Gradient Background -->
+    <header class="sticky top-0 z-50 glass border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 animate-fade-in">
+                    <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                        </svg>
+                    </div>
+                    <h1 class="text-2xl font-bold gradient-text">PyCode Studio</h1>
+                </div>
+                
+                <!-- Mode Toggle & Actions -->
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Selector -->
+                    <div class="relative theme-selector-wrapper">
+                        <button onclick="toggleThemeMenu()" class="p-2 rounded-lg hover:bg-dark-hover transition-all duration-300 group flex items-center space-x-2" title="Change Theme">
+                            <svg class="w-5 h-5 text-gray-400 group-hover:text-primary-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                            </svg>
+                            <span class="hidden sm:inline text-sm text-gray-400 group-hover:text-primary-400" id="currentThemeName">Dark</span>
+                            <svg class="w-4 h-4 text-gray-400 group-hover:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Theme Dropdown Menu -->
+                        <div id="themeMenu" class="hidden absolute right-0 mt-2 w-56 glass rounded-lg shadow-xl z-50 animate-slide-down">
+                            <div class="py-2">
+                                <div class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Choose Theme</div>
+                                <button onclick="setTheme('dark')" class="w-full px-4 py-2 text-left text-sm hover:bg-dark-hover transition-colors flex items-center justify-between group">
+                                    <span class="flex items-center space-x-2">
+                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                                        </svg>
+                                        <span class="text-gray-300 group-hover:text-white">Dark</span>
+                                    </span>
+                                    <svg class="w-4 h-4 text-primary-500 hidden theme-check-dark" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                                <button onclick="setTheme('light')" class="w-full px-4 py-2 text-left text-sm hover:bg-dark-hover transition-colors flex items-center justify-between group">
+                                    <span class="flex items-center space-x-2">
+                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                        </svg>
+                                        <span class="text-gray-300 group-hover:text-white">Light</span>
+                                    </span>
+                                    <svg class="w-4 h-4 text-primary-500 hidden theme-check-light" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                                <button onclick="setTheme('contrast')" class="w-full px-4 py-2 text-left text-sm hover:bg-dark-hover transition-colors flex items-center justify-between group">
+                                    <span class="flex items-center space-x-2">
+                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                                        </svg>
+                                        <span class="text-gray-300 group-hover:text-white">High Contrast</span>
+                                    </span>
+                                    <svg class="w-4 h-4 text-primary-500 hidden theme-check-contrast" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                                <div class="border-t border-gray-700 my-2"></div>
+                                <div class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Custom Themes</div>
+                                <button onclick="setTheme('monokai')" class="w-full px-4 py-2 text-left text-sm hover:bg-dark-hover transition-colors flex items-center justify-between group">
+                                    <span class="flex items-center space-x-2">
+                                        <span class="w-4 h-4 rounded bg-gradient-to-br from-pink-500 to-cyan-400"></span>
+                                        <span class="text-gray-300 group-hover:text-white">Monokai</span>
+                                    </span>
+                                    <svg class="w-4 h-4 text-primary-500 hidden theme-check-monokai" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                                <button onclick="setTheme('dracula')" class="w-full px-4 py-2 text-left text-sm hover:bg-dark-hover transition-colors flex items-center justify-between group">
+                                    <span class="flex items-center space-x-2">
+                                        <span class="w-4 h-4 rounded bg-gradient-to-br from-purple-500 to-green-400"></span>
+                                        <span class="text-gray-300 group-hover:text-white">Dracula</span>
+                                    </span>
+                                    <svg class="w-4 h-4 text-primary-500 hidden theme-check-dracula" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info Button -->
+                    <button onclick="showInfo()" class="px-4 py-2 rounded-lg bg-dark-card hover:bg-dark-hover text-gray-300 hover:text-white transition-all duration-300 flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="hidden sm:inline">About</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Editor/REPL Mode Toggle -->
+        <div class="mb-6 animate-slide-up">
+            <div class="glass rounded-xl p-4 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm font-medium text-gray-400">Mode:</span>
+                    
+                    <!-- Toggle Switch -->
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="modeToggle" class="sr-only peer" onchange="toggleMode()">
+                        <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-primary-600 peer-checked:to-purple-600"></div>
+                    </label>
+                    
+                    <div class="flex items-center space-x-6">
+                        <span id="editorModeLabel" class="text-sm font-semibold text-primary-400 transition-all duration-300">
+                            📝 Code Editor
+                        </span>
+                        <span id="replModeLabel" class="text-sm font-medium text-gray-500 transition-all duration-300">
+                            💻 REPL Console
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Stats -->
+                <div id="editorStats" class="hidden sm:flex items-center space-x-4 text-xs text-gray-500">
+                    <span>0 lines</span>
+                    <span>•</span>
+                    <span>0 chars</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Left Panel - Editor/REPL -->
+            <div class="space-y-6 animate-slide-up" style="animation-delay: 0.1s;">
+                
+                <!-- Code Editor Panel -->
+                <div id="editorPanel" class="glass rounded-xl overflow-hidden shadow-2xl transform hover:scale-[1.01] transition-all duration-300">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-dark-card to-dark-surface px-6 py-4 border-b border-gray-700 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-200 flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                            </svg>
+                            <span>Code Editor</span>
+                        </h2>
+                        
+                        <!-- Action Buttons -->
+                        <div class="flex items-center space-x-2">
+                            <button onclick="runCode()" class="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 rounded-lg text-white font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/50 flex items-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>Run</span>
+                            </button>
+                            
+                            <button onclick="clearEditor()" class="p-2 rounded-lg bg-dark-hover hover:bg-gray-600 text-gray-400 hover:text-white transition-all duration-300" title="Clear">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Code Textarea -->
+                    <div class="relative">
+                        <textarea 
+                            id="codeEditor" 
+                            class="code-editor w-full h-96 bg-dark-surface text-gray-300 p-6 resize-none focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all" 
+                            placeholder="# Write your Python code here...&#10;print('Hello, World!')"
+                            oninput="updateEditorStats()"
+                            spellcheck="false"
+                        >print("Hello, World!")
+print("Welcome to PyCode Studio!")
+
+# Try some calculations
+x = 10
+y = 20
+print(f"Sum: {x + y}")
+print(f"Product: {x * y}")</textarea>
+                        
+                        <!-- Line numbers could be added here with JS -->
+                    </div>
+                </div>
+                
+                <!-- REPL Console Panel (Hidden by default) -->
+                <div id="replPanel" class="glass rounded-xl overflow-hidden shadow-2xl hidden transform hover:scale-[1.01] transition-all duration-300">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-dark-card to-dark-surface px-6 py-4 border-b border-gray-700 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-200 flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>REPL Console</span>
+                        </h2>
+                        
+                        <button onclick="clearRepl()" class="px-3 py-1 rounded-lg bg-dark-hover hover:bg-gray-600 text-gray-400 hover:text-white text-sm transition-all duration-300">
+                            Clear
+                        </button>
+                    </div>
+                    
+                    <!-- REPL Output -->
+                    <div id="replOutput" class="code-editor bg-dark-surface text-gray-300 p-6 h-80 overflow-y-auto">
+                        <div class="text-gray-500 text-sm">Python 3.13 REPL - Interactive Python Shell</div>
+                    </div>
+                    
+                    <!-- REPL Input -->
+                    <div class="bg-dark-card border-t border-gray-700 px-6 py-3 flex items-center space-x-2">
+                        <span class="text-green-400 font-bold">>>> </span>
+                        <input 
+                            type="text" 
+                            id="replInput" 
+                            class="code-editor flex-1 bg-transparent text-gray-300 focus:outline-none" 
+                            placeholder="Enter Python code..."
+                            onkeypress="handleReplEnter(event)"
+                        >
+                    </div>
+                </div>
+                
+                <!-- Example Templates -->
+                <div class="glass rounded-xl p-6">
+                    <h3 class="text-sm font-semibold text-gray-400 mb-4 flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                        </svg>
+                        <span>Quick Examples</span>
+                    </h3>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <button onclick="loadExample('hello')" class="px-3 py-2 bg-dark-card hover:bg-primary-600/20 rounded-lg text-xs text-gray-400 hover:text-primary-400 border border-gray-700 hover:border-primary-600 transition-all duration-300">
+                            Hello World
+                        </button>
+                        <button onclick="loadExample('fibonacci')" class="px-3 py-2 bg-dark-card hover:bg-primary-600/20 rounded-lg text-xs text-gray-400 hover:text-primary-400 border border-gray-700 hover:border-primary-600 transition-all duration-300">
+                            Fibonacci
+                        </button>
+                        <button onclick="loadExample('class')" class="px-3 py-2 bg-dark-card hover:bg-primary-600/20 rounded-lg text-xs text-gray-400 hover:text-primary-400 border border-gray-700 hover:border-primary-600 transition-all duration-300">
+                            OOP Class
+                        </button>
+                        <button onclick="loadExample('sorting')" class="px-3 py-2 bg-dark-card hover:bg-primary-600/20 rounded-lg text-xs text-gray-400 hover:text-primary-400 border border-gray-700 hover:border-primary-600 transition-all duration-300">
+                            Sorting
+                        </button>
+                        <button onclick="loadExample('comprehension')" class="px-3 py-2 bg-dark-card hover:bg-primary-600/20 rounded-lg text-xs text-gray-400 hover:text-primary-400 border border-gray-700 hover:border-primary-600 transition-all duration-300">
+                            List Comp
+                        </button>
+                        <button onclick="loadExample('magic')" class="px-3 py-2 bg-gradient-to-r from-purple-600/30 to-pink-600/30 hover:from-purple-600/50 hover:to-pink-600/50 rounded-lg text-xs text-purple-300 border border-purple-500/50 hover:border-purple-400 transition-all duration-300">
+                            🪄 Magic
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Output & Variables -->
+            <div class="space-y-6 animate-slide-up" style="animation-delay: 0.2s;">
+                
+                <!-- Output Panel -->
+                <div class="glass rounded-xl overflow-hidden shadow-2xl transform hover:scale-[1.01] transition-all duration-300">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-dark-card to-dark-surface px-6 py-4 border-b border-gray-700 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-200 flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span>Output</span>
+                        </h2>
+                        
+                        <button onclick="clearOutput()" class="px-3 py-1 rounded-lg bg-dark-hover hover:bg-gray-600 text-gray-400 hover:text-white text-sm transition-all duration-300">
+                            Clear
+                        </button>
+                    </div>
+                    
+                    <!-- Output Content -->
+                    <div id="output" class="code-editor bg-dark-surface text-gray-300 p-6 min-h-[24rem] max-h-[32rem] overflow-y-auto">
+                        <div class="text-gray-500 text-sm italic">Output will appear here...</div>
+                    </div>
+                </div>
+                
+                <!-- Variables Panel -->
+                <div class="glass rounded-xl overflow-hidden shadow-2xl transform hover:scale-[1.01] transition-all duration-300">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-dark-card to-dark-surface px-6 py-4 border-b border-gray-700 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-200 flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            <span>Variables</span>
+                            <span id="varCount" class="px-2 py-1 bg-dark-hover rounded-full text-xs text-gray-400">0</span>
+                        </h2>
+                        
+                        <button onclick="refreshVariables()" class="p-2 rounded-lg bg-dark-hover hover:bg-gray-600 text-gray-400 hover:text-white transition-all duration-300 group" title="Refresh">
+                            <svg class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Search -->
+                    <div class="px-6 py-3 bg-dark-card border-b border-gray-700">
+                        <input 
+                            type="text" 
+                            id="varSearch" 
+                            class="w-full px-4 py-2 bg-dark-surface text-gray-300 rounded-lg border border-gray-600 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all text-sm" 
+                            placeholder="🔍 Search variables..."
+                            onkeyup="filterVariables()"
+                        >
+                    </div>
+                    
+                    <!-- Variables List -->
+                    <div id="variables" class="p-4 max-h-64 overflow-y-auto space-y-2">
+                        <div class="text-gray-500 text-sm text-center py-4">No variables defined</div>
+                    </div>
+                </div>
+                
+                <!-- Execution Stats Panel -->
+                <div id="executionStats" class="glass rounded-xl overflow-hidden shadow-2xl animate-fade-in">
+                    <div class="bg-gradient-to-r from-dark-card to-dark-surface px-6 py-4 border-b border-gray-700 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-200 flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <span>Execution Stats</span>
+                        </h2>
+                    </div>
+                    
+                    <div class="p-4">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">⏱️ Last Execution</div>
+                                <div class="stat-value stat-time" id="statTime">0ms</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">💾 Memory</div>
+                                <div class="stat-value stat-memory" id="statMemory">0 MB</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">⚡ Executions</div>
+                                <div class="stat-value stat-cpu" id="statCount">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Command History Panel -->
+                <div class="glass rounded-xl overflow-hidden shadow-2xl animate-fade-in">
+                    <div class="bg-gradient-to-r from-dark-card to-dark-surface px-6 py-4 border-b border-gray-700 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-200 flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span>Command History</span>
+                            <span id="historyCount" class="px-2 py-1 bg-dark-hover rounded-full text-xs text-gray-400">0</span>
+                        </h2>
+                        
+                        <div class="flex items-center space-x-2">
+                            <button onclick="clearHistory()" class="p-2 rounded-lg bg-dark-hover hover:bg-gray-600 text-gray-400 hover:text-white transition-all duration-300" title="Clear History">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="px-4 py-3 bg-dark-card border-b border-gray-700">
+                        <input 
+                            type="text" 
+                            id="historySearch" 
+                            class="w-full px-4 py-2 bg-dark-surface text-gray-300 rounded-lg border border-gray-600 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all text-sm" 
+                            placeholder="🔍 Filter history..."
+                            onkeyup="filterHistory()"
+                        >
+                    </div>
+                    
+                    <div id="commandHistory" class="history-list">
+                        <div class="text-gray-500 text-sm text-center py-4">No commands yet</div>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex items-center space-x-3">
+                    <button onclick="resetInterpreter()" class="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 rounded-xl text-white font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-red-500/50 flex items-center justify-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>Reset All</span>
+                    </button>
+                    
+                    <button onclick="downloadCode()" class="flex-1 px-4 py-3 bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 rounded-xl text-white font-medium transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        <span>Download</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status Bar -->
+        <div class="mt-6 glass rounded-xl px-6 py-3 flex items-center justify-between text-sm animate-fade-in">
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span class="text-gray-400">Status:</span>
+                    <span id="status" class="text-green-400 font-medium">Ready</span>
+                </div>
+            </div>
+            
+            <div class="text-gray-500 text-xs hidden sm:block">
+                PyCode Studio v1.0 • Made with ❤️ using Flask & Tailwind
+            </div>
+        </div>
+    </main>
+
+    <!-- Command Palette (Hidden by default) -->
+    <div id="commandPalette" class="command-palette-overlay hidden" onclick="closeCommandPalette(event)">
+        <div class="command-palette" onclick="event.stopPropagation()">
+            <input 
+                type="text" 
+                id="commandPaletteInput" 
+                class="command-palette-input" 
+                placeholder="Type a command..."
+                onkeyup="filterCommands(event)"
+                autofocus
+            >
+            <div class="command-palette-results" id="commandPaletteResults">
+                <!-- Commands will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal (Hidden by default) -->
+    <div id="infoModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4 animate-fade-in">
+        <div class="glass rounded-2xl max-w-2xl w-full p-8 animate-slide-up relative">
+            <button onclick="closeInfo()" class="absolute top-4 right-4 p-2 rounded-lg hover:bg-dark-hover transition-all">
+                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            
+            <h2 class="text-2xl font-bold gradient-text mb-4">About PyCode Studio</h2>
+            
+            <div class="space-y-4 text-gray-300">
+                <p>
+                    <strong class="text-primary-400">PyCode Studio</strong> is a modern, web-based Python interpreter with a beautiful, immersive UI built with Flask and Tailwind CSS.
+                </p>
+                
+                <div class="bg-dark-card rounded-lg p-4 space-y-2">
+                    <h3 class="font-semibold text-primary-400">Features:</h3>
+                    <ul class="space-y-1 text-sm">
+                        <li>✨ Beautiful Tailwind CSS design with smooth animations</li>
+                        <li>💻 Code Editor & REPL Console modes</li>
+                        <li>⚡ Real-time code execution</li>
+                        <li>📊 Variable tracking and inspection</li>
+                        <li>🪄 Magic commands support (%time, %vars, etc.)</li>
+                        <li>🎨 Glass morphism and gradient effects</li>
+                        <li>📱 Fully responsive design</li>
+                    </ul>
+                </div>
+                
+                <div class="flex items-center space-x-3 pt-4">
+                    <button onclick="closeInfo()" class="flex-1 px-4 py-2 bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-500 hover:to-purple-500 rounded-lg text-white font-medium transition-all duration-300">
+                        Got it!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Global variables
+        let inputValues = [];
+        let allVariables = {};
+        let inputPrompts = [];
+        let currentInputIndex = 0;
+        let currentTheme = 'dark'; // Default theme
+        let themeMenuOpen = false;
+        let commandPaletteOpen = false;
+        let autocompleteVisible = false;
+        let selectedCommandIndex = 0;
+        
+        // Execution stats tracking
+        let executionCount = 0;
+        let lastExecutionTime = 0;
+        let commandHistoryList = [];
+        let expandedVariables = new Set();
+        
+        // Python keywords, built-ins, and common functions
+        const pythonKeywords = ['print', 'def', 'class', 'if', 'else', 'elif', 'for', 'while', 'return', 'import', 'from', 'as', 'try', 'except', 'finally', 'with', 'lambda', 'yield', 'pass', 'break', 'continue'];
+        const pythonBuiltins = ['len', 'range', 'str', 'int', 'float', 'list', 'dict', 'set', 'tuple', 'bool', 'type', 'isinstance', 'sum', 'max', 'min', 'abs', 'round', 'sorted', 'reversed', 'enumerate', 'zip', 'map', 'filter'];
+        const pythonMethods = ['append', 'extend', 'insert', 'remove', 'pop', 'clear', 'index', 'count', 'sort', 'reverse', 'copy', 'keys', 'values', 'items', 'get', 'update', 'split', 'join', 'replace', 'strip', 'lower', 'upper', 'startswith', 'endswith'];
+        
+        // Function signatures for documentation
+        const functionDocs = {
+            'print': {
+                signature: 'print(value, ..., sep=" ", end="\\n")',
+                description: 'Print values to the output',
+                params: [
+                    { name: 'value', desc: 'Values to be printed' },
+                    { name: 'sep', desc: 'String inserted between values (default: space)' },
+                    { name: 'end', desc: 'String appended after the last value (default: newline)' }
+                ],
+                example: 'print("Hello", "World", sep="-")'
+            },
+            'len': {
+                signature: 'len(object)',
+                description: 'Return the length (number of items) of an object',
+                params: [
+                    { name: 'object', desc: 'Sequence (string, list, tuple) or collection (dict, set)' }
+                ],
+                example: 'len([1, 2, 3, 4])'
+            },
+            'range': {
+                signature: 'range(start, stop, step)',
+                description: 'Return a sequence of numbers',
+                params: [
+                    { name: 'start', desc: 'Starting number (default: 0)' },
+                    { name: 'stop', desc: 'End number (not included)' },
+                    { name: 'step', desc: 'Step size (default: 1)' }
+                ],
+                example: 'range(0, 10, 2)'
+            },
+            'input': {
+                signature: 'input(prompt)',
+                description: 'Read a string from standard input',
+                params: [
+                    { name: 'prompt', desc: 'Optional prompt string' }
+                ],
+                example: 'name = input("Enter name: ")'
+            }
+        };
+        
+        // Commands for command palette
+        const commands = [
+            { id: 'theme', title: 'Change Theme', description: 'Switch between dark, light, and custom themes', icon: '🎨', action: () => document.querySelector('.theme-selector-wrapper button').click() },
+            { id: 'clear', title: 'Clear Console', description: 'Clear all output from the console', icon: '🗑️', action: () => clearOutput() },
+            { id: 'variables', title: 'List Variables', description: 'Show all defined variables', icon: '📊', action: () => refreshVariables() },
+            { id: 'run', title: 'Run Script File', description: 'Execute code from the editor', icon: '▶️', action: () => executeCode() },
+            { id: 'reset', title: 'Reset Interpreter', description: 'Clear all variables and reset state', icon: '🔄', action: () => resetInterpreter() },
+            { id: 'download', title: 'Download Code', description: 'Download current code as .py file', icon: '💾', action: () => downloadCode() },
+            { id: 'examples', title: 'Load Example', description: 'Load a code example template', icon: '📝', action: () => document.getElementById('examplesBtn')?.scrollIntoView({ behavior: 'smooth' }) },
+            { id: 'editor', title: 'Switch to Editor', description: 'Use multi-line code editor mode', icon: '📄', action: () => switchToEditor() },
+            { id: 'repl', title: 'Switch to REPL', description: 'Use interactive Python shell', icon: '⚡', action: () => switchToRepl() },
+            { id: 'help', title: 'Show Help', description: 'Display documentation and features', icon: '❓', action: () => showInfo() }
+        ];
+        
+        // Example templates
+        const examples = {
+            hello: `print("Hello, World!")
+print("Welcome to PyCode Studio!")
+
+# Try some calculations
+x = 10
+y = 20
+print(f"Sum: {x + y}")
+print(f"Product: {x * y}")`,
+            
+            fibonacci: `# Fibonacci Sequence
+def fibonacci(n):
+    """Generate fibonacci sequence up to n terms"""
+    a, b = 0, 1
+    sequence = []
+    for _ in range(n):
+        sequence.append(a)
+        a, b = b, a + b
+    return sequence
+
+# Generate first 10 terms
+result = fibonacci(10)
+print("Fibonacci sequence:")
+print(result)`,
+            
+            class: `# Object-Oriented Programming Example
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+    
+    def greet(self):
+        return f"Hello, I'm {self.name} and I'm {self.age} years old!"
+    
+    def birthday(self):
+        self.age += 1
+        return f"Happy birthday! Now I'm {self.age}!"
+
+# Create an instance
+person = Person("Alice", 25)
+print(person.greet())
+print(person.birthday())`,
+            
+            sorting: `# Sorting Algorithms Demo
+import random
+
+# Generate random list
+numbers = [random.randint(1, 100) for _ in range(10)]
+print(f"Original: {numbers}")
+
+# Bubble sort
+def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        for j in range(0, n-i-1):
+            if arr[j] > arr[j+1]:
+                arr[j], arr[j+1] = arr[j+1], arr[j]
+    return arr
+
+sorted_nums = bubble_sort(numbers.copy())
+print(f"Sorted: {sorted_nums}")`,
+            
+            comprehension: `# List Comprehensions & Functional Programming
+numbers = range(1, 11)
+
+# Basic comprehension
+squares = [x**2 for x in numbers]
+print(f"Squares: {squares}")
+
+# Conditional comprehension
+evens = [x for x in numbers if x % 2 == 0]
+print(f"Even numbers: {evens}")
+
+# Dictionary comprehension
+square_dict = {x: x**2 for x in numbers}
+print(f"Square dictionary: {square_dict}")
+
+# Using map and filter
+cubes = list(map(lambda x: x**3, numbers))
+print(f"Cubes: {cubes}")`,
+            
+            magic: `# 🪄 Magic Commands Demo
+# Try these special commands:
+
+# Get help
+%help
+
+# Time code execution
+%time sum(range(1000000))
+
+# List all variables
+x = 10
+y = "hello"
+%vars
+
+# More accurate timing
+%timeit sorted([5,2,8,1,9])
+
+# Show execution history
+%history
+
+# Variable details
+%whos`
+        };
+        
+        // Mode Toggle
+        function toggleMode() {
+            const toggle = document.getElementById('modeToggle');
+            const editorPanel = document.getElementById('editorPanel');
+            const replPanel = document.getElementById('replPanel');
+            const editorLabel = document.getElementById('editorModeLabel');
+            const replLabel = document.getElementById('replModeLabel');
+            
+            if (toggle.checked) {
+                // REPL mode
+                editorPanel.classList.add('hidden');
+                replPanel.classList.remove('hidden');
+                editorLabel.classList.remove('text-primary-400', 'font-semibold');
+                editorLabel.classList.add('text-gray-500', 'font-medium');
+                replLabel.classList.remove('text-gray-500', 'font-medium');
+                replLabel.classList.add('text-purple-400', 'font-semibold');
+                
+                setTimeout(() => document.getElementById('replInput').focus(), 100);
+            } else {
+                // Editor mode
+                editorPanel.classList.remove('hidden');
+                replPanel.classList.add('hidden');
+                editorLabel.classList.remove('text-gray-500', 'font-medium');
+                editorLabel.classList.add('text-primary-400', 'font-semibold');
+                replLabel.classList.remove('text-purple-400', 'font-semibold');
+                replLabel.classList.add('text-gray-500', 'font-medium');
+                
+                setTimeout(() => document.getElementById('codeEditor').focus(), 100);
+            }
+        }
+        
+        // Run code
+        async function runCode() {
+            const code = document.getElementById('codeEditor').value.trim();
+            
+            if (!code) {
+                showError('No code to execute');
+                return;
+            }
+            
+            // Check for input() - interactive terminal mode
+            if (code.includes('input(')) {
+                runCodeInteractive();
+                return;
+            }
+            
+            executeCode([]);
+        }
+        
+        // Interactive terminal for input()
+        async function runCodeInteractive() {
+            const code = document.getElementById('codeEditor').value;
+            inputPrompts = extractInputPrompts(code);
+            inputValues = [];
+            currentInputIndex = 0;
+            
+            const output = document.getElementById('output');
+            output.innerHTML = '';
+            
+            showNextInputPrompt();
+        }
+        
+        function extractInputPrompts(code) {
+            const prompts = [];
+            const regex = /input\s*\(\s*["']([^"']+)["']\s*\)/g;
+            let match;
+            
+            while ((match = regex.exec(code)) !== null) {
+                prompts.push(match[1]);
+            }
+            
+            if (prompts.length === 0) {
+                const simpleRegex = /input\s*\(\s*\)/g;
+                let count = 0;
+                while (simpleRegex.exec(code) !== null) {
+                    count++;
+                }
+                for (let i = 0; i < count; i++) {
+                    prompts.push(`Input ${i + 1}`);
+                }
+            }
+            
+            return prompts;
+        }
+        
+        function showNextInputPrompt() {
+            const output = document.getElementById('output');
+            
+            if (currentInputIndex < inputPrompts.length) {
+                // Show prompt
+                const promptDiv = document.createElement('div');
+                promptDiv.className = 'text-blue-400 mb-2 animate-fade-in';
+                promptDiv.textContent = inputPrompts[currentInputIndex];
+                output.appendChild(promptDiv);
+                
+                // Create inline input
+                const inputLine = document.createElement('div');
+                inputLine.className = 'flex items-center mb-3';
+                
+                const inputField = document.createElement('input');
+                inputField.type = 'text';
+                inputField.id = 'terminalInput';
+                inputField.className = 'flex-1 bg-dark-card border-2 border-primary-500/50 text-green-400 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent code-editor animate-fade-in';
+                
+                inputField.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        handleTerminalInput(this.value);
+                    }
+                });
+                
+                inputLine.appendChild(inputField);
+                output.appendChild(inputLine);
+                
+                inputField.focus();
+                output.scrollTop = output.scrollHeight;
+            } else {
+                executeCode(inputValues);
+            }
+        }
+        
+        function handleTerminalInput(value) {
+            const output = document.getElementById('output');
+            const inputField = document.getElementById('terminalInput');
+            
+            if (!value) return;
+            
+            inputValues.push(value);
+            
+            // Show entered value
+            const valueDiv = document.createElement('div');
+            valueDiv.className = 'text-green-400 mb-3 font-semibold animate-fade-in';
+            valueDiv.textContent = value;
+            
+            const inputLine = inputField.parentElement;
+            inputLine.innerHTML = '';
+            inputLine.appendChild(valueDiv);
+            
+            currentInputIndex++;
+            showNextInputPrompt();
+        }
+        
+        // Execute code
+        async function executeCode(inputs) {
+            const code = document.getElementById('codeEditor').value.trim();
+            updateStatus('Executing...');
+            
+            // Show progress bar
+            showProgress();
+            
+            const startTime = performance.now();
+            
+            try {
+                const requestBody = { code: code };
+                if (inputs && inputs.length > 0) {
+                    requestBody.inputs = inputs;
+                }
+                
+                // Simulate progress
+                updateProgress(50);
+                
+                const response = await fetch('/api/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                const result = await response.json();
+                
+                const endTime = performance.now();
+                const executionTime = Math.round(endTime - startTime);
+                
+                // Complete progress
+                updateProgress(100);
+                
+                // Update stats and history
+                updateExecutionStats(executionTime);
+                addToCommandHistory(code, result);
+                
+                displayOutput(result);
+                refreshVariables();
+                
+                // Hide progress bar
+                hideProgress();
+                
+                // Show success/error feedback
+                const outputDiv = document.getElementById('output');
+                if (result.success) {
+                    updateStatus('Success');
+                    showSuccessCheckmark(outputDiv);
+                    if (executionTime > 2000) {
+                        // Show toast for long-running commands
+                        showToast('Command Completed', 'success', `Execution time: ${executionTime}ms`);
+                    }
+                } else {
+                    updateStatus('Error');
+                    showErrorFlash(outputDiv);
+                    showToast('Execution Error', 'error', result.error?.split('\n')[0] || 'An error occurred');
+                }
+            } catch (error) {
+                hideProgress();
+                showError('Network error: ' + error.message);
+                updateStatus('Error');
+                showToast('Network Error', 'error', error.message);
+                
+                const outputDiv = document.getElementById('output');
+                showErrorFlash(outputDiv);
+            }
+        }
+        
+        // Display output with styled prompts
+        function displayOutput(result) {
+            const outputDiv = document.getElementById('output');
+            
+            // Check if interactive mode
+            const isInteractive = outputDiv.innerHTML.trim().length > 0 && inputValues.length > 0;
+            
+            if (!isInteractive) {
+                outputDiv.innerHTML = '';
+            } else {
+                // Add separator
+                const separator = document.createElement('div');
+                separator.className = 'border-t border-gray-600 my-4';
+                outputDiv.appendChild(separator);
+            }
+            
+            // Create stylized terminal prompt
+            const promptDiv = document.createElement('div');
+            promptDiv.className = 'terminal-prompt animate-fade-in';
+            
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            promptDiv.innerHTML = `
+                <svg class="prompt-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span class="prompt-text">PyShell</span>
+                <span class="prompt-text">»</span>
+                <span class="prompt-info">[${timeStr}] ~/PyCode</span>
+            `;
+            outputDiv.appendChild(promptDiv);
+            
+            // Magic command indicator
+            if (result.is_magic) {
+                const indicator = document.createElement('div');
+                indicator.className = 'text-purple-400 font-bold mb-3 pl-3 border-l-4 border-purple-500 animate-fade-in flex items-center gap-2';
+                indicator.innerHTML = `
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z"></path>
+                    </svg>
+                    <span>Magic Command</span>
+                `;
+                outputDiv.appendChild(indicator);
+            }
+            
+            // Error with styled label and smart hints
+            if (result.error) {
+                const errorLabel = document.createElement('div');
+                errorLabel.className = 'io-label io-label-error animate-fade-in';
+                errorLabel.innerHTML = `
+                    <svg class="io-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>ERROR</span>
+                `;
+                outputDiv.appendChild(errorLabel);
+                
+                // Smart error hints container
+                const errorContainer = document.createElement('div');
+                errorContainer.className = 'error-hint-container';
+                
+                const errorHeader = document.createElement('div');
+                errorHeader.className = 'error-hint-header';
+                errorHeader.innerHTML = `
+                    <svg class="error-hint-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <span class="error-hint-title">Error Detected</span>
+                `;
+                errorContainer.appendChild(errorHeader);
+                
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'error-hint-message code-editor';
+                errorMessage.textContent = result.error;
+                errorContainer.appendChild(errorMessage);
+                
+                // Get smart suggestions
+                const suggestions = enhanceErrorDisplay(result.error);
+                
+                if (suggestions.length > 0) {
+                    const suggestionsDiv = document.createElement('div');
+                    suggestionsDiv.className = 'error-hint-suggestions';
+                    
+                    const suggestionTitle = document.createElement('div');
+                    suggestionTitle.className = 'error-hint-suggestion-title';
+                    suggestionTitle.textContent = '💡 Possible solutions:';
+                    suggestionsDiv.appendChild(suggestionTitle);
+                    
+                    suggestions.forEach(suggestion => {
+                        const suggestionItem = document.createElement('div');
+                        suggestionItem.className = 'error-hint-suggestion';
+                        suggestionItem.textContent = suggestion;
+                        suggestionsDiv.appendChild(suggestionItem);
+                    });
+                    
+                    errorContainer.appendChild(suggestionsDiv);
+                }
+                
+                outputDiv.appendChild(errorContainer);
+            }
+            
+            // Output with styled label
+            if (result.output) {
+                const outputLabel = document.createElement('div');
+                outputLabel.className = 'io-label io-label-output animate-fade-in';
+                outputLabel.innerHTML = `
+                    <svg class="io-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span>OUTPUT</span>
+                `;
+                outputDiv.appendChild(outputLabel);
+                
+                const outputText = document.createElement('div');
+                outputText.className = 'text-gray-300 whitespace-pre-wrap animate-fade-in mb-3 pl-4 code-editor';
+                outputText.textContent = result.output;
+                outputDiv.appendChild(outputText);
+            }
+            
+            // Handle inputs if present
+            if (result.needs_input && result.input_prompts) {
+                const inputLabel = document.createElement('div');
+                inputLabel.className = 'io-label io-label-input animate-fade-in';
+                inputLabel.innerHTML = `
+                    <svg class="io-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                    <span>INPUT</span>
+                `;
+                outputDiv.appendChild(inputLabel);
+            }
+            
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+        
+        // REPL functions
+        function handleReplEnter(event) {
+            if (event.key === 'Enter') {
+                executeReplLine();
+            }
+        }
+        
+        async function executeReplLine() {
+            const input = document.getElementById('replInput');
+            const line = input.value.trim();
+            
+            if (!line) return;
+            
+            const output = document.getElementById('replOutput');
+            
+            // Create stylized prompt with input
+            const promptDiv = document.createElement('div');
+            promptDiv.className = 'terminal-prompt animate-fade-in mb-2';
+            
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            promptDiv.innerHTML = `
+                <svg class="prompt-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span class="prompt-text">»»»</span>
+            `;
+            output.appendChild(promptDiv);
+            
+            // Input label
+            const inputLabel = document.createElement('div');
+            inputLabel.className = 'io-label io-label-input animate-fade-in';
+            inputLabel.innerHTML = `
+                <svg class="io-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                </svg>
+                <span>INPUT</span>
+            `;
+            output.appendChild(inputLabel);
+            
+            // Echo input
+            const inputDiv = document.createElement('div');
+            inputDiv.className = 'mb-3 animate-fade-in pl-4';
+            inputDiv.innerHTML = `<span class="text-gray-300 code-editor">${escapeHtml(line)}</span>`;
+            output.appendChild(inputDiv);
+            
+            input.value = '';
+            
+            try {
+                const response = await fetch('/api/execute_line', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ line: line })
+                });
+                
+                const result = await response.json();
+                
+                if (result.output) {
+                    const outputLabel = document.createElement('div');
+                    outputLabel.className = 'io-label io-label-output animate-fade-in';
+                    outputLabel.innerHTML = `
+                        <svg class="io-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span>OUTPUT</span>
+                    `;
+                    output.appendChild(outputLabel);
+                    
+                    const outputDiv = document.createElement('div');
+                    outputDiv.className = 'text-gray-300 mb-3 pl-4 animate-fade-in code-editor';
+                    outputDiv.textContent = result.output;
+                    output.appendChild(outputDiv);
+                }
+                
+                if (result.error) {
+                    const errorLabel = document.createElement('div');
+                    errorLabel.className = 'io-label io-label-error animate-fade-in';
+                    errorLabel.innerHTML = `
+                        <svg class="io-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>ERROR</span>
+                    `;
+                    output.appendChild(errorLabel);
+                    
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'text-red-400 mb-3 pl-4 animate-fade-in code-editor';
+                    errorDiv.textContent = result.error;
+                    output.appendChild(errorDiv);
+                }
+                
+                // Add separator
+                const separator = document.createElement('div');
+                separator.className = 'border-t border-gray-600 my-4';
+                output.appendChild(separator);
+                
+                output.scrollTop = output.scrollHeight;
+                refreshVariables();
+            } catch (error) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'text-red-400 mb-3 pl-4';
+                errorDiv.textContent = 'Network error: ' + error.message;
+                output.appendChild(errorDiv);
+            }
+        }
+        
+        // Variables
+        async function refreshVariables() {
+            try {
+                const response = await fetch('/api/variables');
+                const data = await response.json();
+                allVariables = data.variables;
+                displayVariables();
+            } catch (error) {
+                console.error('Error fetching variables:', error);
+            }
+        }
+        
+        function displayVariables() {
+            const container = document.getElementById('variables');
+            const searchTerm = document.getElementById('varSearch').value.toLowerCase();
+            
+            const filtered = Object.entries(allVariables).filter(([name]) =>
+                name.toLowerCase().includes(searchTerm)
+            );
+            
+            document.getElementById('varCount').textContent = filtered.length;
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="text-gray-500 text-sm text-center py-4">No variables found</div>';
+                return;
+            }
+            
+            container.innerHTML = filtered.map(([name, info]) => {
+                const isExpandable = ['list', 'dict', 'tuple', 'set'].includes(info.type);
+                const isExpanded = expandedVariables.has(name);
+                const typeClass = `type-${info.type}`;
+                
+                let sizeInfo = '';
+                if (isExpandable && info.value) {
+                    try {
+                        const val = info.value;
+                        if (info.type === 'list' || info.type === 'tuple' || info.type === 'set') {
+                            sizeInfo = `<span class="variable-size">len: ${val.length || 0}</span>`;
+                        } else if (info.type === 'dict') {
+                            sizeInfo = `<span class="variable-size">keys: ${Object.keys(val).length || 0}</span>`;
+                        }
+                    } catch (e) {}
+                }
+                
+                let detailsHTML = '';
+                if (isExpandable && isExpanded) {
+                    detailsHTML = renderVariableDetails(info.value, info.type);
+                }
+                
+                return `
+                    <div class="variable-item">
+                        <div class="variable-header" onclick="toggleVariableExpand('${name}', ${isExpandable})">
+                            <div class="flex items-center flex-1 min-w-0">
+                                <span class="variable-name">${escapeHtml(name)}</span>
+                                <span class="variable-type ${typeClass}">${escapeHtml(info.type)}</span>
+                                <span class="variable-value">${escapeHtml(formatVariableValue(info.value, info.type))}</span>
+                                ${sizeInfo}
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                ${isExpandable ? `
+                                    <svg class="variable-expand-icon ${isExpanded ? 'expanded' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                ` : ''}
+                                <button onclick="event.stopPropagation(); copyVariable('${name}')" class="p-1 rounded hover:bg-dark-surface transition-all" title="Copy">
+                                    <svg class="w-3.5 h-3.5 text-gray-400 hover:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        ${detailsHTML}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function formatVariableValue(value, type) {
+            if (type === 'list' || type === 'tuple' || type === 'set') {
+                return `[${Array.isArray(value) ? value.length : '?'} items]`;
+            } else if (type === 'dict') {
+                return `{${typeof value === 'object' && value !== null ? Object.keys(value).length : '?'} keys}`;
+            } else if (typeof value === 'string' && value.length > 50) {
+                return value.substring(0, 50) + '...';
+            }
+            return String(value);
+        }
+        
+        function renderVariableDetails(value, type) {
+            let content = '';
+            
+            try {
+                if (type === 'list' || type === 'tuple' || type === 'set') {
+                    if (Array.isArray(value)) {
+                        content = value.slice(0, 20).map((item, index) => `
+                            <div class="variable-detail-item">
+                                <span class="variable-detail-key">[${index}]</span>
+                                <span class="variable-detail-value">${escapeHtml(String(item))}</span>
+                            </div>
+                        `).join('');
+                        if (value.length > 20) {
+                            content += `<div class="text-gray-500 text-xs mt-2">... and ${value.length - 20} more items</div>`;
+                        }
+                    }
+                } else if (type === 'dict') {
+                    if (typeof value === 'object' && value !== null) {
+                        const entries = Object.entries(value).slice(0, 20);
+                        content = entries.map(([key, val]) => `
+                            <div class="variable-detail-item">
+                                <span class="variable-detail-key">${escapeHtml(String(key))}</span>
+                                <span class="variable-detail-value">${escapeHtml(String(val))}</span>
+                            </div>
+                        `).join('');
+                        if (Object.keys(value).length > 20) {
+                            content += `<div class="text-gray-500 text-xs mt-2">... and ${Object.keys(value).length - 20} more keys</div>`;
+                        }
+                    }
+                }
+            } catch (e) {
+                content = '<div class="text-red-400 text-xs">Error displaying details</div>';
+            }
+            
+            return `<div class="variable-details expanded">${content || '<div class="text-gray-500 text-xs">No details available</div>'}</div>`;
+        }
+        
+        function toggleVariableExpand(name, isExpandable) {
+            if (!isExpandable) return;
+            
+            if (expandedVariables.has(name)) {
+                expandedVariables.delete(name);
+            } else {
+                expandedVariables.add(name);
+            }
+            displayVariables();
+        }
+        
+        function filterVariables() {
+            displayVariables();
+        }
+        
+        function copyVariable(name) {
+            const value = allVariables[name].value;
+            navigator.clipboard.writeText(String(value));
+            showToast('Copied to clipboard!');
+        }
+        
+        async function deleteVariable(name) {
+            try {
+                await fetch('/api/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: `del ${name}` })
+                });
+                refreshVariables();
+                showToast('Variable deleted');
+            } catch (error) {
+                showError('Failed to delete variable');
+            }
+        }
+        
+        // ========================================
+        // EXECUTION STATS & COMMAND HISTORY
+        // ========================================
+        
+        function updateExecutionStats(executionTime) {
+            executionCount++;
+            lastExecutionTime = executionTime;
+            
+            // Update stats display
+            document.getElementById('statTime').textContent = executionTime ? `${executionTime}ms` : '0ms';
+            document.getElementById('statCount').textContent = executionCount;
+            
+            // Estimate memory (simulated)
+            const memoryUsage = Math.floor(Math.random() * 50) + 10; // Simulated 10-60 MB
+            document.getElementById('statMemory').textContent = `${memoryUsage} MB`;
+        }
+        
+        function addToCommandHistory(code, result) {
+            const historyItem = {
+                timestamp: new Date(),
+                code: code,
+                success: result.success || !result.error,
+                output: result.output || result.error || ''
+            };
+            
+            commandHistoryList.unshift(historyItem); // Add to beginning
+            
+            // Keep only last 50 commands
+            if (commandHistoryList.length > 50) {
+                commandHistoryList = commandHistoryList.slice(0, 50);
+            }
+            
+            displayCommandHistory();
+        }
+        
+        function displayCommandHistory() {
+            const container = document.getElementById('commandHistory');
+            const searchTerm = document.getElementById('historySearch').value.toLowerCase();
+            
+            const filtered = commandHistoryList.filter(item => 
+                item.code.toLowerCase().includes(searchTerm)
+            );
+            
+            document.getElementById('historyCount').textContent = filtered.length;
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="text-gray-500 text-sm text-center py-4">No commands found</div>';
+                return;
+            }
+            
+            container.innerHTML = filtered.map((item, index) => {
+                const timeStr = item.timestamp.toLocaleTimeString();
+                const dateStr = item.timestamp.toLocaleDateString();
+                const statusClass = item.success ? 'text-green-400' : 'text-red-400';
+                const statusIcon = item.success ? '✓' : '✗';
+                
+                return `
+                    <div class="history-item">
+                        <div class="history-item-header">
+                            <span class="history-item-time">${dateStr} ${timeStr}</span>
+                            <span class="${statusClass}">${statusIcon}</span>
+                        </div>
+                        <div class="history-item-code">${escapeHtml(item.code)}</div>
+                        <div class="history-item-actions">
+                            <button class="history-action-btn run" onclick="rerunHistoryItem(${index})">
+                                ▶ Run
+                            </button>
+                            <button class="history-action-btn edit" onclick="editHistoryItem(${index})">
+                                ✎ Edit
+                            </button>
+                            <button class="history-action-btn delete" onclick="deleteHistoryItem(${index})">
+                                🗑 Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function filterHistory() {
+            displayCommandHistory();
+        }
+        
+        function rerunHistoryItem(index) {
+            const searchTerm = document.getElementById('historySearch').value.toLowerCase();
+            const filtered = commandHistoryList.filter(item => 
+                item.code.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filtered[index]) {
+                document.getElementById('codeEditor').value = filtered[index].code;
+                runCode();
+            }
+        }
+        
+        function editHistoryItem(index) {
+            const searchTerm = document.getElementById('historySearch').value.toLowerCase();
+            const filtered = commandHistoryList.filter(item => 
+                item.code.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filtered[index]) {
+                document.getElementById('codeEditor').value = filtered[index].code;
+                document.getElementById('codeEditor').focus();
+                showToast('Code loaded into editor');
+            }
+        }
+        
+        function deleteHistoryItem(index) {
+            const searchTerm = document.getElementById('historySearch').value.toLowerCase();
+            const filtered = commandHistoryList.filter(item => 
+                item.code.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filtered[index]) {
+                const originalIndex = commandHistoryList.indexOf(filtered[index]);
+                if (originalIndex !== -1) {
+                    commandHistoryList.splice(originalIndex, 1);
+                    displayCommandHistory();
+                    showToast('History item deleted');
+                }
+            }
+        }
+        
+        function clearHistory() {
+            if (confirm('Clear all command history?')) {
+                commandHistoryList = [];
+                displayCommandHistory();
+                showToast('History cleared');
+            }
+        }
+        
+        // ===================================
+        // Phase 4: Delight & Micro-Interactions
+        // ===================================
+        
+        // A. Welcome Screen
+        function startNewSession() {
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            welcomeScreen.classList.add('hiding');
+            setTimeout(() => {
+                welcomeScreen.style.display = 'none';
+            }, 500);
+            
+            // Show success toast
+            showToast('Welcome to PyCode Studio!', 'success', '🚀 Session started. Happy coding!');
+        }
+        
+        // Show welcome screen on first load (can be disabled via localStorage)
+        window.addEventListener('load', () => {
+            const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+            if (hasSeenWelcome) {
+                document.getElementById('welcomeScreen').style.display = 'none';
+            } else {
+                localStorage.setItem('hasSeenWelcome', 'true');
+            }
+        });
+        
+        // B. Progress Bar & Spinner
+        function showProgress() {
+            const container = document.getElementById('progressContainer');
+            const bar = document.getElementById('progressBar');
+            container.classList.add('active');
+            bar.style.width = '30%';
+        }
+        
+        function updateProgress(percent) {
+            const bar = document.getElementById('progressBar');
+            bar.style.width = percent + '%';
+        }
+        
+        function hideProgress() {
+            const container = document.getElementById('progressContainer');
+            const bar = document.getElementById('progressBar');
+            bar.style.width = '100%';
+            setTimeout(() => {
+                container.classList.remove('active');
+                bar.style.width = '0%';
+            }, 300);
+        }
+        
+        // C. Enhanced Toast Notifications
+        function showToast(title, type = 'info', message = '') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            let icon, iconColor;
+            switch(type) {
+                case 'success':
+                    icon = '✓';
+                    iconColor = 'bg-green-500';
+                    break;
+                case 'error':
+                    icon = '✗';
+                    iconColor = 'bg-red-500';
+                    break;
+                case 'warning':
+                    icon = '⚠';
+                    iconColor = 'bg-yellow-500';
+                    break;
+                default:
+                    icon = 'ℹ';
+                    iconColor = 'bg-blue-500';
+            }
+            
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <div class="status-icon ${type}">
+                        <span style="color: white; font-weight: bold; font-size: 14px;">${icon}</span>
+                    </div>
+                    <span class="toast-title">${title}</span>
+                    <span class="toast-close" onclick="this.parentElement.parentElement.remove()">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </span>
+                </div>
+                ${message ? `<div class="toast-body">${message}</div>` : ''}
+                <div class="toast-progress">
+                    <div class="toast-progress-bar"></div>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Add ding animation
+            toast.classList.add('ding-animation');
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // D. Button Ripple Effect
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const ripple = document.createElement('span');
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            ripple.className = 'ripple';
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            
+            button.appendChild(ripple);
+            
+            setTimeout(() => ripple.remove(), 600);
+        }
+        
+        // Add ripple effect to all buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.querySelectorAll('button, .btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', createRipple);
+            });
+        });
+        
+        // E. Success/Error Visual Feedback
+        function showSuccessCheckmark(element) {
+            const checkmark = document.createElement('div');
+            checkmark.className = 'status-icon success';
+            checkmark.innerHTML = `
+                <svg class="w-4 h-4 text-white checkmark-animated" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            `;
+            checkmark.style.position = 'absolute';
+            checkmark.style.right = '10px';
+            checkmark.style.top = '10px';
+            
+            element.style.position = 'relative';
+            element.appendChild(checkmark);
+            
+            setTimeout(() => checkmark.remove(), 2000);
+        }
+        
+        function showErrorFlash(element) {
+            const error = document.createElement('div');
+            error.className = 'status-icon error fire-icon';
+            error.innerHTML = `
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            `;
+            error.style.position = 'absolute';
+            error.style.right = '10px';
+            error.style.top = '10px';
+            
+            element.style.position = 'relative';
+            element.appendChild(error);
+            
+            setTimeout(() => error.remove(), 2000);
+        }
+        
+        // F. Enhanced Code Editor Focus
+        document.addEventListener('DOMContentLoaded', () => {
+            const codeEditor = document.getElementById('codeEditor');
+            if (codeEditor) {
+                codeEditor.addEventListener('focus', () => {
+                    // Add subtle glow effect (handled by CSS)
+                    console.log('Editor focused - animation active');
+                });
+            }
+        });
+        
+        // G. Keyboard Shortcut Customization (Simple implementation)
+        const customShortcuts = {
+            'run': 'Ctrl+Enter',
+            'clear': 'Ctrl+L',
+            'palette': 'Ctrl+Shift+P',
+            'reset': 'Ctrl+Shift+R'
+        };
+        
+        function getShortcut(action) {
+            return customShortcuts[action] || '';
+        }
+        
+        // Allow users to view shortcuts
+        function showShortcutsHelp() {
+            const shortcuts = Object.entries(customShortcuts)
+                .map(([action, key]) => `<div class="shortcut-item"><span>${action}</span><span class="shortcut-key">${key}</span></div>`)
+                .join('');
+            
+            showToast('Keyboard Shortcuts', 'info', `<div style="margin-top: 10px;">${shortcuts}</div>`);
+        }
+        
+        // Update existing functions to use new animations
+        
+        // Utility functions
+        function clearEditor() {
+            document.getElementById('codeEditor').value = '';
+            updateEditorStats();
+        }
+        
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '<div class="text-gray-500 text-sm italic">Output will appear here...</div>';
+        }
+        
+        function clearRepl() {
+            document.getElementById('replOutput').innerHTML = '<div class="text-gray-500 text-sm">Python 3.13 REPL - Interactive Python Shell</div>';
+        }
+        
+        async function resetInterpreter() {
+            if (!confirm('Reset interpreter? This will clear all variables and history.')) return;
+            
+            try {
+                await fetch('/api/reset', { method: 'POST' });
+                clearOutput();
+                clearRepl();
+                refreshVariables();
+                showToast('Interpreter reset');
+                updateStatus('Ready');
+            } catch (error) {
+                showError('Failed to reset interpreter');
+            }
+        }
+        
+        function downloadCode() {
+            const code = document.getElementById('codeEditor').value;
+            const blob = new Blob([code], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'code.py';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Code downloaded');
+        }
+        
+        function loadExample(name) {
+            if (examples[name]) {
+                document.getElementById('codeEditor').value = examples[name];
+                updateEditorStats();
+                showToast(`Loaded ${name} example`);
+            }
+        }
+        
+        function updateEditorStats() {
+            const code = document.getElementById('codeEditor').value;
+            const lines = code.split('\n').length;
+            const chars = code.length;
+            document.getElementById('editorStats').innerHTML = `<span>${lines} lines</span><span>•</span><span>${chars} chars</span>`;
+        }
+        
+        function updateStatus(text) {
+            document.getElementById('status').textContent = text;
+        }
+        
+        function showError(message) {
+            const output = document.getElementById('output');
+            output.innerHTML = `<div class="bg-red-900/30 border-l-4 border-red-500 text-red-300 p-4 rounded-r-lg animate-fade-in">${escapeHtml(message)}</div>`;
+        }
+        
+        function showToast(message) {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-8 right-8 glass px-6 py-3 rounded-lg shadow-2xl animate-slide-up z-50';
+            toast.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span class="text-gray-200">${escapeHtml(message)}</span>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+        
+        function showInfo() {
+            document.getElementById('infoModal').classList.remove('hidden');
+            document.getElementById('infoModal').classList.add('flex');
+        }
+        
+        function closeInfo() {
+            document.getElementById('infoModal').classList.add('hidden');
+            document.getElementById('infoModal').classList.remove('flex');
+        }
+        
+        function toggleTheme() {
+            // Legacy function - redirects to toggle menu
+            toggleThemeMenu();
+        }
+        
+        function toggleThemeMenu() {
+            themeMenuOpen = !themeMenuOpen;
+            const menu = document.getElementById('themeMenu');
+            
+            if (themeMenuOpen) {
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+        
+        function setTheme(theme) {
+            currentTheme = theme;
+            const body = document.body;
+            
+            // Remove all theme classes
+            body.classList.remove('theme-light', 'theme-contrast', 'theme-monokai', 'theme-dracula');
+            
+            // Apply theme-specific styling
+            const themeConfigs = {
+                'dark': {
+                    name: 'Dark',
+                    bgClass: 'bg-gradient-to-br from-dark-bg via-gray-900 to-dark-bg',
+                    textClass: 'text-gray-100'
+                },
+                'light': {
+                    name: 'Light',
+                    bgClass: 'bg-gradient-to-br from-gray-50 via-white to-gray-100',
+                    textClass: 'text-gray-900',
+                    bodyClass: 'theme-light'
+                },
+                'contrast': {
+                    name: 'High Contrast',
+                    bgClass: 'bg-black',
+                    textClass: 'text-white',
+                    bodyClass: 'theme-contrast'
+                },
+                'monokai': {
+                    name: 'Monokai',
+                    bgClass: 'bg-gradient-to-br from-monokai-bg via-gray-900 to-black',
+                    textClass: 'text-gray-100',
+                    bodyClass: 'theme-monokai'
+                },
+                'dracula': {
+                    name: 'Dracula',
+                    bgClass: 'bg-gradient-to-br from-dracula-bg via-purple-900 to-black',
+                    textClass: 'text-gray-100',
+                    bodyClass: 'theme-dracula'
+                }
+            };
+            
+            const config = themeConfigs[theme];
+            
+            // Apply body class if specified
+            if (config.bodyClass) {
+                body.classList.add(config.bodyClass);
+            }
+            
+            // Update theme name in header
+            document.getElementById('currentThemeName').textContent = config.name;
+            
+            // Update checkmarks
+            document.querySelectorAll('[class*="theme-check-"]').forEach(el => el.classList.add('hidden'));
+            const checkmark = document.querySelector(`.theme-check-${theme}`);
+            if (checkmark) {
+                checkmark.classList.remove('hidden');
+            }
+            
+            // Close menu
+            toggleThemeMenu();
+            
+            // Save to localStorage
+            localStorage.setItem('pycode-theme', theme);
+            
+            // Show notification
+            showToast(`Theme changed to ${config.name}`);
+        }
+        
+        // Close theme menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const themeSelector = document.querySelector('.theme-selector-wrapper');
+            if (themeMenuOpen && themeSelector && !themeSelector.contains(e.target)) {
+                toggleThemeMenu();
+            }
+        });
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // ========================================
+        // COMMAND PALETTE
+        // ========================================
+        
+        function openCommandPalette() {
+            const palette = document.getElementById('commandPalette');
+            const input = document.getElementById('commandPaletteInput');
+            palette.classList.remove('hidden');
+            commandPaletteOpen = true;
+            selectedCommandIndex = 0;
+            renderCommands(commands);
+            setTimeout(() => input.focus(), 100);
+        }
+        
+        function closeCommandPalette(event) {
+            if (event && event.target.id !== 'commandPalette') return;
+            const palette = document.getElementById('commandPalette');
+            palette.classList.add('hidden');
+            commandPaletteOpen = false;
+        }
+        
+        function filterCommands(event) {
+            const query = event.target.value.toLowerCase();
+            
+            // Handle keyboard navigation
+            if (event.key === 'ArrowDown') {
+                selectedCommandIndex = Math.min(selectedCommandIndex + 1, commands.length - 1);
+                highlightSelectedCommand();
+                return;
+            } else if (event.key === 'ArrowUp') {
+                selectedCommandIndex = Math.max(selectedCommandIndex - 1, 0);
+                highlightSelectedCommand();
+                return;
+            } else if (event.key === 'Enter') {
+                executeSelectedCommand();
+                return;
+            } else if (event.key === 'Escape') {
+                closeCommandPalette({ target: { id: 'commandPalette' } });
+                return;
+            }
+            
+            // Filter commands
+            const filtered = commands.filter(cmd => 
+                cmd.title.toLowerCase().includes(query) || 
+                cmd.description.toLowerCase().includes(query)
+            );
+            
+            selectedCommandIndex = 0;
+            renderCommands(filtered);
+        }
+        
+        function renderCommands(commandList) {
+            const results = document.getElementById('commandPaletteResults');
+            results.innerHTML = '';
+            
+            commandList.forEach((cmd, index) => {
+                const item = document.createElement('div');
+                item.className = `command-palette-item ${index === selectedCommandIndex ? 'selected' : ''}`;
+                item.onclick = () => {
+                    cmd.action();
+                    closeCommandPalette({ target: { id: 'commandPalette' } });
+                };
+                
+                item.innerHTML = `
+                    <div class="command-palette-icon text-2xl">${cmd.icon}</div>
+                    <div class="command-palette-content">
+                        <div class="command-palette-title">${cmd.title}</div>
+                        <div class="command-palette-description">${cmd.description}</div>
+                    </div>
+                `;
+                
+                results.appendChild(item);
+            });
+        }
+        
+        function highlightSelectedCommand() {
+            const items = document.querySelectorAll('.command-palette-item');
+            items.forEach((item, index) => {
+                if (index === selectedCommandIndex) {
+                    item.classList.add('selected');
+                    item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+        
+        function executeSelectedCommand() {
+            const items = document.querySelectorAll('.command-palette-item');
+            if (items[selectedCommandIndex]) {
+                items[selectedCommandIndex].click();
+            }
+        }
+        
+        // ========================================
+        // AUTOCOMPLETE & INTELLISENSE
+        // ========================================
+        
+        function setupAutocomplete() {
+            const codeInput = document.getElementById('code');
+            const replInput = document.getElementById('replInput');
+            
+            if (codeInput) {
+                codeInput.addEventListener('keyup', handleAutocomplete);
+            }
+            
+            if (replInput) {
+                replInput.addEventListener('keyup', handleAutocomplete);
+            }
+        }
+        
+        function handleAutocomplete(event) {
+            const input = event.target;
+            const cursorPos = input.selectionStart;
+            const textBeforeCursor = input.value.substring(0, cursorPos);
+            const words = textBeforeCursor.split(/[\s\(\)\[\]\{\},;]+/);
+            const currentWord = words[words.length - 1];
+            
+            // Only show autocomplete if typing a word (at least 1 char)
+            if (currentWord.length < 1) {
+                hideAutocomplete();
+                return;
+            }
+            
+            // Get suggestions
+            const suggestions = getSuggestions(currentWord);
+            
+            if (suggestions.length > 0) {
+                showAutocomplete(input, suggestions, currentWord);
+            } else {
+                hideAutocomplete();
+            }
+        }
+        
+        function getSuggestions(prefix) {
+            const all = [
+                ...pythonKeywords.map(k => ({ name: k, type: 'keyword', icon: '🔑' })),
+                ...pythonBuiltins.map(b => ({ name: b, type: 'function', icon: '⚡' })),
+                ...pythonMethods.map(m => ({ name: m, type: 'method', icon: '🔧' })),
+                ...Object.keys(allVariables).map(v => ({ name: v, type: 'variable', icon: '📦' }))
+            ];
+            
+            return all.filter(item => 
+                item.name.toLowerCase().startsWith(prefix.toLowerCase())
+            ).slice(0, 10);
+        }
+        
+        function showAutocomplete(input, suggestions, prefix) {
+            hideAutocomplete(); // Remove existing
+            
+            const popup = document.createElement('div');
+            popup.id = 'autocompletePopup';
+            popup.className = 'autocomplete-popup';
+            
+            suggestions.forEach((suggestion, index) => {
+                const item = document.createElement('div');
+                item.className = `autocomplete-item ${index === 0 ? 'selected' : ''}`;
+                item.innerHTML = `
+                    <span class="autocomplete-icon">${suggestion.icon}</span>
+                    <span class="autocomplete-name">${suggestion.name}</span>
+                    <span class="autocomplete-type">${suggestion.type}</span>
+                `;
+                
+                item.onclick = () => {
+                    // Insert suggestion
+                    const value = input.value;
+                    const start = input.selectionStart - prefix.length;
+                    input.value = value.substring(0, start) + suggestion.name + value.substring(input.selectionStart);
+                    input.selectionStart = input.selectionEnd = start + suggestion.name.length;
+                    hideAutocomplete();
+                    input.focus();
+                };
+                
+                popup.appendChild(item);
+            });
+            
+            // Position popup
+            input.parentElement.style.position = 'relative';
+            input.parentElement.appendChild(popup);
+            
+            // Position below input
+            popup.style.top = (input.offsetTop + input.offsetHeight + 5) + 'px';
+            popup.style.left = input.offsetLeft + 'px';
+        }
+        
+        function hideAutocomplete() {
+            const existing = document.getElementById('autocompletePopup');
+            if (existing) {
+                existing.remove();
+            }
+        }
+        
+        // ========================================
+        // SMART ERROR HINTS
+        // ========================================
+        
+        function enhanceErrorDisplay(error) {
+            const errorText = error.toString();
+            
+            // Parse common errors and provide suggestions
+            const suggestions = [];
+            
+            if (errorText.includes('NameError')) {
+                suggestions.push("Check if the variable name is spelled correctly");
+                suggestions.push("Make sure the variable is defined before using it");
+                suggestions.push("Check if you meant to use a string (add quotes)");
+            } else if (errorText.includes('SyntaxError')) {
+                if (errorText.includes('unterminated string')) {
+                    suggestions.push("Add a closing quote to your string");
+                    suggestions.push("Check for mismatched quotes (' vs \")");
+                } else if (errorText.includes('invalid syntax')) {
+                    suggestions.push("Check for missing colons (:) after if/for/while/def");
+                    suggestions.push("Verify parentheses are balanced");
+                    suggestions.push("Check indentation is consistent");
+                }
+            } else if (errorText.includes('TypeError')) {
+                suggestions.push("Check if you're using the right data type");
+                suggestions.push("Verify function arguments match the signature");
+                suggestions.push("Try converting values with int(), str(), or float()");
+            } else if (errorText.includes('IndexError')) {
+                suggestions.push("List index is out of range - check your index value");
+                suggestions.push("Remember: lists are 0-indexed in Python");
+                suggestions.push("Use len() to check list size before accessing");
+            } else if (errorText.includes('KeyError')) {
+                suggestions.push("The key doesn't exist in the dictionary");
+                suggestions.push("Use .get() method for safe key access");
+                suggestions.push("Check the key spelling and type");
+            } else if (errorText.includes('ZeroDivisionError')) {
+                suggestions.push("Cannot divide by zero");
+                suggestions.push("Add a check: if divisor != 0 before dividing");
+            }
+            
+            return suggestions;
+        }
+        
+        // ========================================
+        // HOVER DOCUMENTATION
+        // ========================================
+        
+        function setupHoverDocumentation() {
+            const codeInput = document.getElementById('code');
+            const replInput = document.getElementById('replInput');
+            
+            if (codeInput) {
+                codeInput.addEventListener('mousemove', handleHover);
+                codeInput.addEventListener('mouseleave', hideDocumentation);
+            }
+            
+            if (replInput) {
+                replInput.addEventListener('mousemove', handleHover);
+                replInput.addEventListener('mouseleave', hideDocumentation);
+            }
+        }
+        
+        function handleHover(event) {
+            const input = event.target;
+            const text = input.value;
+            
+            // Get word under cursor (approximate based on mouse position)
+            // For simplicity, we'll check if any known function is at cursor
+            const cursorPos = input.selectionStart;
+            const textBeforeCursor = text.substring(0, cursorPos);
+            const words = textBeforeCursor.split(/[\s\(\)\[\]\{\},;]+/);
+            const currentWord = words[words.length - 1];
+            
+            // Check if word has documentation
+            if (functionDocs[currentWord]) {
+                showDocumentation(event, currentWord);
+            } else {
+                hideDocumentation();
+            }
+        }
+        
+        function showDocumentation(event, funcName) {
+            hideDocumentation(); // Remove existing
+            
+            const doc = functionDocs[funcName];
+            if (!doc) return;
+            
+            const popup = document.createElement('div');
+            popup.className = 'docs-popup animate-fade-in';
+            popup.id = 'docsPopup';
+            
+            // Header with function name
+            const header = document.createElement('div');
+            header.className = 'docs-popup-header';
+            header.textContent = funcName;
+            popup.appendChild(header);
+            
+            // Signature
+            const signature = document.createElement('div');
+            signature.className = 'docs-popup-signature';
+            signature.textContent = doc.signature;
+            popup.appendChild(signature);
+            
+            // Description
+            const description = document.createElement('div');
+            description.className = 'docs-popup-description';
+            description.textContent = doc.description;
+            popup.appendChild(description);
+            
+            // Parameters
+            if (doc.params && doc.params.length > 0) {
+                const paramsTitle = document.createElement('div');
+                paramsTitle.style.fontWeight = 'bold';
+                paramsTitle.style.marginTop = '8px';
+                paramsTitle.textContent = 'Parameters:';
+                popup.appendChild(paramsTitle);
+                
+                doc.params.forEach(param => {
+                    const paramDiv = document.createElement('div');
+                    paramDiv.style.paddingLeft = '12px';
+                    paramDiv.style.marginTop = '4px';
+                    paramDiv.innerHTML = `<code>${param}</code>`;
+                    popup.appendChild(paramDiv);
+                });
+            }
+            
+            // Example
+            if (doc.example) {
+                const exampleTitle = document.createElement('div');
+                exampleTitle.style.fontWeight = 'bold';
+                exampleTitle.style.marginTop = '8px';
+                exampleTitle.textContent = 'Example:';
+                popup.appendChild(exampleTitle);
+                
+                const exampleCode = document.createElement('code');
+                exampleCode.style.display = 'block';
+                exampleCode.style.paddingLeft = '12px';
+                exampleCode.style.marginTop = '4px';
+                exampleCode.style.fontFamily = 'Fira Code, monospace';
+                exampleCode.textContent = doc.example;
+                popup.appendChild(exampleCode);
+            }
+            
+            // Position popup near mouse
+            popup.style.position = 'fixed';
+            popup.style.left = event.clientX + 10 + 'px';
+            popup.style.top = event.clientY + 10 + 'px';
+            
+            document.body.appendChild(popup);
+        }
+        
+        function hideDocumentation() {
+            const popup = document.getElementById('docsPopup');
+            if (popup) {
+                popup.remove();
+            }
+        }
+        
+        // ========================================
+        // SIGNATURE HELP (Shift+Tab)
+        // ========================================
+        
+        function setupSignatureHelp() {
+            const codeInput = document.getElementById('code');
+            const replInput = document.getElementById('replInput');
+            
+            const handleSignature = (event) => {
+                // Shift+Tab for signature help
+                if (event.shiftKey && event.key === 'Tab') {
+                    event.preventDefault();
+                    showSignatureHelp(event.target);
+                }
+            };
+            
+            if (codeInput) {
+                codeInput.addEventListener('keydown', handleSignature);
+            }
+            
+            if (replInput) {
+                replInput.addEventListener('keydown', handleSignature);
+            }
+        }
+        
+        function showSignatureHelp(input) {
+            const cursorPos = input.selectionStart;
+            const textBeforeCursor = input.value.substring(0, cursorPos);
+            
+            // Find function being typed (look for opening parenthesis)
+            const match = textBeforeCursor.match(/(\w+)\s*\($/);
+            if (!match) return;
+            
+            const funcName = match[1];
+            const doc = functionDocs[funcName];
+            
+            if (!doc) return;
+            
+            // Remove existing signature popup
+            const existing = document.getElementById('signaturePopup');
+            if (existing) existing.remove();
+            
+            const popup = document.createElement('div');
+            popup.className = 'signature-popup animate-fade-in';
+            popup.id = 'signaturePopup';
+            
+            const funcDiv = document.createElement('div');
+            funcDiv.className = 'signature-function';
+            funcDiv.textContent = funcName;
+            popup.appendChild(funcDiv);
+            
+            const paramsDiv = document.createElement('div');
+            paramsDiv.className = 'signature-params';
+            paramsDiv.textContent = doc.signature;
+            popup.appendChild(paramsDiv);
+            
+            if (doc.description) {
+                const descDiv = document.createElement('div');
+                descDiv.style.marginTop = '8px';
+                descDiv.style.fontSize = '0.9em';
+                descDiv.style.opacity = '0.9';
+                descDiv.textContent = doc.description;
+                popup.appendChild(descDiv);
+            }
+            
+            // Position below input
+            const rect = input.getBoundingClientRect();
+            popup.style.position = 'fixed';
+            popup.style.left = rect.left + 'px';
+            popup.style.top = rect.bottom + 5 + 'px';
+            
+            document.body.appendChild(popup);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                if (popup.parentElement) {
+                    popup.remove();
+                }
+            }, 5000);
+        }
+        
+        // ========================================
+        // KEYBOARD SHORTCUTS
+        // ========================================
+        
+        document.addEventListener('keydown', (event) => {
+            // Ctrl+Shift+P or Cmd+Shift+P - Command Palette
+            if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'P') {
+                event.preventDefault();
+                if (commandPaletteOpen) {
+                    closeCommandPalette({ target: { id: 'commandPalette' } });
+                } else {
+                    openCommandPalette();
+                }
+            }
+            
+            // Ctrl+Enter or Cmd+Enter - Run code
+            if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                event.preventDefault();
+                executeCode();
+            }
+            
+            // Escape - Close popups
+            if (event.key === 'Escape') {
+                hideAutocomplete();
+                if (commandPaletteOpen) {
+                    closeCommandPalette({ target: { id: 'commandPalette' } });
+                }
+            }
+        });
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            updateEditorStats();
+            refreshVariables();
+            setupAutocomplete();
+            setupHoverDocumentation();
+            setupSignatureHelp();
+            
+            // Add smooth scroll
+            document.documentElement.style.scrollBehavior = 'smooth';
+            
+            // Load saved theme
+            const savedTheme = localStorage.getItem('pycode-theme') || 'dark';
+            if (savedTheme !== 'dark') {
+                setTheme(savedTheme);
+            } else {
+                // Show checkmark for dark theme
+                document.querySelector('.theme-check-dark')?.classList.remove('hidden');
+            }
+            
+            // Show welcome toast
+            showToast('💡 Tip: Press Ctrl+Shift+P to open Command Palette!');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1128 @@
+/* ============================================
+   RESPONSIVE ENHANCEMENTS FOR PYINTER
+   Mobile-First Responsive Design
+   Compatible with all screen sizes
+   ============================================ */
+
+/* Base responsive utilities */
+:root {
+    --mobile-padding: 10px;
+    --tablet-padding: 15px;
+    --desktop-padding: 20px;
+    --touch-target-size: 44px;
+}
+
+/* Ensure proper box sizing */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Prevent horizontal scroll on mobile */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Responsive images and media */
+img, video, iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ============================================
+   MOBILE OPTIMIZATIONS (320px - 767px)
+   ============================================ */
+@media (max-width: 767px) {
+    /* Remove default padding/margins */
+    body {
+        margin: 0;
+        padding: 0;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    /* Typography scaling */
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.3rem; }
+    h3 { font-size: 1.1rem; }
+    h4 { font-size: 1rem; }
+    
+    /* Compact navbar - single row with icons only */
+    .top-navbar {
+        padding: 6px 8px;
+        min-height: 44px;
+        height: auto;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 4px;
+    }
+    
+    .nav-brand {
+        font-size: 14px;
+        min-width: auto;
+        flex-shrink: 0;
+    }
+    
+    /* Show the brand name on small screens as well — keep the icon visible too.
+       If you prefer to hide the name on very narrow phones, we can limit this
+       with a smaller breakpoint (e.g. max-width: 420px). */
+    .brand-name {
+        display: inline-block;
+    }
+    
+    .brand-icon {
+        font-size: 20px;
+    }
+    
+    .nav-controls {
+        display: flex;
+        gap: 4px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        flex: 1;
+        justify-content: flex-end;
+    }
+
+    /* Hide center nav area on small screens for compactness */
+    .nav-center {
+        display: none !important;
+    }
+    
+    /* Compact icon-only buttons */
+    .nav-btn {
+        min-width: 40px !important;
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        font-size: 18px !important;
+        border-radius: 8px;
+        flex-shrink: 0;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .nav-btn i {
+        margin: 0 !important;
+        font-size: 18px !important;
+    }
+    
+    /* Hide ALL text in nav buttons, keep only icons */
+    .nav-btn {
+        font-size: 0 !important; /* Hide text */
+    }
+    
+    .nav-btn i {
+        font-size: 18px !important; /* Show icons */
+    }
+    
+    /* Main container - full viewport */
+    .main-container {
+        height: calc(100vh - 44px) !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        gap: 0 !important;
+    }
+    
+    /* Single column layout - stack vertically */
+    .left-panel,
+    .right-panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+        height: auto !important;
+        border: none !important;
+    }
+    
+    /* Left panel (code editor) - MUCH larger on mobile */
+    .left-panel {
+        flex: 0 0 55vh !important; /* Increase from 45vh to 55vh */
+        max-height: 55vh !important;
+        min-height: 400px !important; /* Ensure minimum usable space */
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Right panel (output/variables) - smaller space */
+    .right-panel {
+        flex: 1 !important;
+        min-height: 150px !important; /* Reduce minimum */
+        display: flex;
+        flex-direction: column;
+        border-top: 2px solid var(--border-color) !important;
+    }
+    
+    /* Compact panel headers - minimal height */
+    .panel-header {
+        padding: 4px 8px !important;
+        min-height: 32px !important;
+        height: 32px !important;
+        flex-wrap: nowrap;
+        gap: 4px;
+        overflow: hidden;
+    }
+    
+    .panel-title {
+        font-size: 0 !important; /* Hide text */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: clip;
+        flex-shrink: 1;
+    }
+    
+    .panel-title i {
+        font-size: 14px !important; /* Show only icon */
+        margin: 0 !important;
+    }
+    
+    .panel-actions {
+        display: flex;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+    
+    /* Compact action buttons - icon only */
+    .icon-btn,
+    .panel-actions button {
+        min-width: 36px !important;
+        width: 36px !important;
+    height: 32px !important;
+        padding: 0 !important;
+        font-size: 0 !important; /* Hide text */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .icon-btn i,
+    .panel-actions button i {
+        font-size: 16px !important; /* Show icon */
+        margin: 0 !important;
+    }
+    
+    /* Mode switcher - more compact, icon only labels */
+    .mode-switcher {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 0 !important; /* Hide text */
+        flex-shrink: 0;
+    }
+    
+    .mode-label {
+        font-size: 0 !important; /* Hide labels */
+        width: 0;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .mode-toggle {
+        width: 44px !important;
+        height: 24px !important;
+        margin: 0 !important;
+    }
+    
+    .mode-slider {
+        height: 24px !important;
+    }
+    
+    .mode-slider:before {
+        height: 18px !important;
+        width: 18px !important;
+        left: 3px;
+        bottom: 3px;
+    }
+    
+    input:checked + .mode-slider:before {
+        transform: translateX(20px);
+        background: white !important;
+    }
+
+    /* Ensure the slider background uses the toggle-on color on mobile */
+    input:checked + .mode-slider {
+        background: var(--toggle-on) !important;
+        border-color: var(--toggle-on) !important;
+    }
+    
+    /* Code editor - optimize for mobile - MAX HEIGHT */
+    .CodeMirror,
+    .editor-container {
+        min-height: 300px !important;
+        height: 100% !important;
+        max-height: none !important;
+        font-size: 14px !important; /* Slightly larger for readability */
+        flex: 1 !important;
+    }
+    
+    .editor-wrapper {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+    }
+    
+    .CodeMirror-gutters {
+        min-width: 30px !important;
+    }
+    
+    .CodeMirror-linenumber {
+        font-size: 11px !important;
+        padding: 0 3px !important;
+    }
+    
+    /* Output container - flexible height */
+    .output-container {
+        flex: 1 1 55% !important;
+        min-height: 120px !important;
+        max-height: none !important;
+        overflow: hidden;
+    }
+    
+    .output-console {
+        font-size: 12px !important;
+        padding: 10px !important;
+        line-height: 1.4;
+    }
+    
+    /* Variables container - flexible height */
+    .variables-container {
+        flex: 1 1 45% !important;
+        min-height: 100px !important;
+        max-height: none !important;
+        overflow: hidden;
+    }
+    
+    .variables-content {
+        font-size: 11px !important;
+        padding: 8px !important;
+    }
+    
+    /* Disable Split.js on mobile - use CSS flexbox instead */
+    .gutter {
+        display: none !important;
+    }
+    
+    /* Status bar - compact */
+    .status-bar {
+        padding: 4px 8px;
+        font-size: 10px;
+        min-height: 24px; /* match compact desktop height */
+        flex-wrap: nowrap;
+        display: flex !important;
+        align-items: center !important;
+        line-height: 1 !important;
+    }
+    
+    .status-item {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+
+    .status-bar .status-item {
+        height: 100% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+    
+    /* Hide less important status items */
+    .status-center,
+    .execution-time {
+        display: none;
+    }
+    
+    /* REPL mode optimizations */
+    .repl-container {
+        min-height: 200px !important;
+        font-size: 13px !important;
+    }
+    
+    .repl-input {
+        font-size: 13px !important;
+        padding: 8px !important;
+    }
+    
+    .repl-output {
+        font-size: 12px !important;
+        padding: 8px !important;
+    }
+    
+    /* Run button - prominent but compact on mobile */
+    .run-btn,
+    #runCodeBtn {
+        min-width: 60px !important;
+        width: auto !important;
+        min-height: 40px !important;
+        height: 40px !important;
+        font-size: 0 !important; /* Hide text */
+        padding: 0 12px !important;
+        margin: 0 !important;
+        border-radius: 8px;
+    }
+    
+    .run-btn i,
+    #runCodeBtn i {
+        font-size: 18px !important; /* Show icon */
+        margin: 0 !important;
+    }
+    
+    /* Touch-friendly buttons */
+    .btn,
+    button {
+        min-height: 40px;
+        padding: 10px 14px;
+        font-size: 14px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+    }
+    
+    /* Modals - full screen on mobile */
+    .modal-content,
+    .settings-modal-content {
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        top: 0 !important;
+        left: 0 !important;
+        transform: none !important;
+    }
+    
+    .modal-header {
+        padding: 12px 15px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--bg-primary);
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .modal-header h2 {
+        font-size: 16px;
+    }
+    
+    .modal-body,
+    .settings-modal-body {
+        padding: 12px;
+        height: calc(100vh - 60px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Settings sections */
+    .settings-section {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .settings-section h3 {
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .section-description {
+        font-size: 11px;
+        margin-bottom: 10px;
+    }
+    
+    /* Theme grid - 2 columns on mobile */
+    .theme-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+    }
+    
+    .theme-card {
+        min-width: 0;
+        padding: 8px;
+    }
+    
+    .theme-preview {
+        height: 50px !important;
+    }
+    
+    .theme-name {
+        font-size: 12px;
+    }
+    
+    .theme-type {
+        font-size: 10px;
+    }
+    
+    /* Color presets - smaller on mobile */
+    .color-presets {
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    
+    .preset-color {
+        width: 32px;
+        height: 32px;
+    }
+    
+    /* Font controls */
+    .font-controls {
+        gap: 15px;
+    }
+    
+    .setting-item {
+        margin-bottom: 15px;
+    }
+    
+    .setting-label,
+    label {
+        font-size: 13px;
+    }
+    
+    .setting-select,
+    select {
+        font-size: 14px;
+        padding: 8px;
+        width: 100%;
+    }
+    
+    .setting-slider,
+    input[type="range"] {
+        width: 100%;
+        height: 32px;
+    }
+    
+    /* Forms and inputs - prevent zoom on iOS */
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    textarea,
+    select {
+        font-size: 16px !important; /* Prevent iOS zoom */
+        padding: 10px;
+        width: 100%;
+    }
+    
+    /* Variable items - compact */
+    .variable-item {
+        padding: 8px;
+        margin-bottom: 6px;
+        font-size: 11px;
+    }
+    
+    .variable-name {
+        font-size: 12px;
+    }
+    
+    .variable-type {
+        font-size: 10px;
+    }
+    
+    .variable-value {
+        font-size: 11px;
+    }
+    
+    /* Toast notifications - adjust for mobile */
+    .toast-container {
+        top: 50px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    .toast {
+        font-size: 13px;
+        padding: 10px;
+    }
+    
+    /* Cursor info - compact */
+    .cursor-info {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+    
+    /* Welcome message - smaller */
+    .welcome-message {
+        padding: 15px;
+        font-size: 13px;
+    }
+    
+    .welcome-message i {
+        font-size: 24px;
+    }
+    
+    .welcome-message p {
+        font-size: 12px;
+    }
+    
+    .welcome-message kbd {
+        font-size: 11px;
+        padding: 2px 6px;
+    }
+    
+    /* Empty state */
+    .empty-state {
+        padding: 15px;
+        font-size: 12px;
+    }
+    
+    /* Scrollbar - thinner on mobile */
+    ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        border-radius: 2px;
+    }
+    
+    /* Hide horizontal gutter */
+    .gutter-horizontal {
+        display: none !important;
+    }
+    
+    /* Vertical gutter - thinner */
+    .gutter-vertical {
+        height: 6px !important;
+        cursor: row-resize;
+        background: var(--border-color);
+        flex-shrink: 0;
+    }
+    
+    .gutter-vertical:active {
+        background: var(--accent-primary);
+    }
+}
+
+/* Show centered nav content on medium+ screens */
+@media (min-width: 900px) {
+    .nav-center {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
+/* ============================================
+   SMALL MOBILE (320px - 480px)
+   ============================================ */
+@media (max-width: 480px) {
+    body {
+        font-size: 13px;
+    }
+    
+    h1 { font-size: 1.3rem; }
+    h2 { font-size: 1.1rem; }
+    h3 { font-size: 1rem; }
+    
+    .CodeMirror,
+    textarea#codeEditor {
+        min-height: 200px !important;
+        font-size: 11px !important;
+    }
+    
+    .output-content,
+    .output-console,
+    .repl-output {
+        min-height: 150px !important;
+        font-size: 10px !important;
+    }
+    
+    .btn {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    
+    .panel-header {
+        padding: 8px;
+    }
+    
+    .nav-btn {
+        font-size: 12px;
+        padding: 8px;
+    }
+    
+    /* Stack button groups */
+    .button-group,
+    .control-panel {
+        flex-direction: column;
+    }
+    
+    .button-group .btn {
+        width: 100%;
+    }
+}
+
+/* ============================================
+   TABLET (768px - 1023px)
+   ============================================ */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .container {
+        padding: var(--tablet-padding);
+    }
+    
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .CodeMirror,
+    textarea#codeEditor {
+        min-height: 350px;
+        font-size: 13px;
+    }
+    
+    .output-content,
+    .output-console {
+        min-height: 250px;
+        font-size: 12px;
+    }
+    
+    .examples-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .button-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        flex: 1;
+        min-width: calc(50% - 5px);
+    }
+}
+
+/* ============================================
+   LANDSCAPE MODE (Mobile/Tablet)
+   ============================================ */
+@media (max-width: 1023px) and (orientation: landscape) {
+    .container {
+        max-height: 100vh;
+        overflow-y: auto;
+    }
+    
+    .main-content {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .CodeMirror,
+    textarea#codeEditor {
+        min-height: 200px !important;
+        max-height: 250px !important;
+    }
+    
+    .output-content,
+    .output-console,
+    .repl-output {
+        min-height: 200px !important;
+        max-height: 250px !important;
+    }
+    
+    header {
+        padding: 15px;
+    }
+    
+    .top-navbar {
+        height: auto;
+        min-height: 40px;
+    }
+}
+
+/* ============================================
+   DESKTOP (1024px+)
+   ============================================ */
+@media (min-width: 1024px) {
+    .container {
+        padding: var(--desktop-padding);
+    }
+    
+    .main-content {
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .CodeMirror {
+        min-height: 400px;
+    }
+    
+    .examples-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+    }
+}
+
+/* ============================================
+   LARGE DESKTOP (1440px+)
+   ============================================ */
+@media (min-width: 1440px) {
+    .container {
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+    
+    .CodeMirror {
+        min-height: 500px;
+    }
+    
+    .main-content {
+        gap: 25px;
+    }
+}
+
+/* ============================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================ */
+@media (hover: none) and (pointer: coarse) {
+    /* Increase all interactive element sizes */
+    button,
+    .btn,
+    .icon-btn,
+    .nav-btn,
+    a,
+    input[type="button"],
+    input[type="submit"] {
+        min-height: var(--touch-target-size);
+        min-width: var(--touch-target-size);
+        padding: 12px 16px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Remove hover effects on touch devices */
+    *:hover {
+        transition: none;
+    }
+    
+    .btn:hover,
+    .icon-btn:hover,
+    .variable-item:hover,
+    .history-item:hover,
+    .example-btn:hover {
+        transform: none !important;
+    }
+    
+    /* Add active/pressed state feedback */
+    button:active,
+    .btn:active,
+    .icon-btn:active {
+        opacity: 0.7;
+        transform: scale(0.98);
+    }
+    
+    /* Improve scrolling on touch */
+    .output-console,
+    .repl-output,
+    .variables-content,
+    .history-list,
+    .modal-body,
+    .CodeMirror-scroll {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+    
+    /* Prevent text selection on buttons */
+    button,
+    .btn {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    /* Prevent zoom on input focus (iOS Safari) */
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY & REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .btn,
+    .panel,
+    .variable-item,
+    .history-item {
+        border-width: 2px !important;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+    .nav-controls,
+    .button-group,
+    .control-panel,
+    .examples-section,
+    .status-bar {
+        padding: 4px 8px;
+        font-size: 10px;
+        min-height: 24px;
+        flex-wrap: nowrap;
+    }
+    .container {
+        box-shadow: none;
+        border-radius: 0;
+    }
+    
+    .main-content {
+        display: block;
+    }
+    
+    .panel {
+        page-break-inside: avoid;
+    }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Responsive visibility helpers */
+.mobile-only {
+    display: block;
+}
+
+.tablet-up {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .mobile-only {
+        display: none;
+    }
+    
+    .tablet-up {
+        display: block;
+    }
+}
+
+.desktop-only {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .desktop-only {
+        display: block;
+    }
+}
+
+/* Responsive text alignment */
+.text-mobile-center {
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .text-mobile-center {
+        text-align: left;
+    }
+}
+
+/* Flexible spacing */
+.gap-responsive {
+    gap: 8px;
+}
+
+@media (min-width: 768px) {
+    .gap-responsive {
+        gap: 12px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .gap-responsive {
+        gap: 16px;
+    }
+}
+
+/* Safe area insets for notched devices */
+@supports (padding: max(0px)) {
+    body {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+    
+    .top-navbar {
+        padding-top: max(8px, env(safe-area-inset-top));
+    }
+    
+    .status-bar {
+        padding-bottom: max(8px, env(safe-area-inset-bottom));
+    }
+}
+
+/* ============================================
+   MOBILE ENHANCEMENTS FOR NEW FEATURES
+   ============================================ */
+
+/* Font size controls on mobile */
+@media (max-width: 767px) {
+    .setting-slider {
+        width: 100%;
+        margin: 10px 0;
+    }
+    
+    .font-controls {
+        gap: 20px;
+    }
+    
+    .setting-item {
+        margin-bottom: 20px;
+    }
+    
+    /* Settings modal optimization */
+    .settings-modal-content {
+        width: 100vw;
+        height: 100vh;
+        max-width: 100vw;
+        max-height: 100vh;
+        border-radius: 0;
+        margin: 0;
+    }
+    
+    .settings-modal-body {
+        padding: 15px;
+        max-height: calc(100vh - 80px);
+    }
+    
+    .settings-section {
+        margin-bottom: 25px;
+    }
+    
+    /* Theme cards mobile grid */
+    .theme-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
+    
+    .theme-card {
+        min-width: 0;
+    }
+    
+    /* Color presets mobile */
+    .color-presets {
+        gap: 8px;
+    }
+    
+    .preset-color {
+        width: 36px;
+    height: 32px;
+    }
+    
+    /* Vertical split panels on mobile */
+    .gutter-vertical {
+        cursor: row-resize;
+        height: 12px !important;
+        background-color: var(--theme-border);
+    }
+    
+    .gutter-vertical:hover {
+        background-color: var(--theme-accent);
+    }
+    
+    /* Ensure split panels work on mobile */
+    #outputContainer,
+    #variablesContainer {
+        min-height: 150px !important;
+    }
+}
+
+/* Touch improvements for tablets */
+@media (min-width: 768px) and (max-width: 1023px) {
+    /* Slightly larger touch targets */
+    .btn,
+    button {
+        min-height: 40px;
+        padding: 10px 14px;
+    }
+    
+    /* Better spacing */
+    .settings-section {
+        margin-bottom: 30px;
+    }
+    
+    /* Theme grid for tablets */
+    .theme-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 767px) and (orientation: landscape) {
+    .CodeMirror {
+        max-height: 250px !important;
+    }
+    
+    .output-console {
+        max-height: 200px !important;
+    }
+    
+    .variables-section {
+        max-height: 150px !important;
+    }
+    
+    /* Split panels side by side in landscape */
+    .main-content {
+        flex-direction: row !important;
+    }
+    
+    .left-panel,
+    .right-panel {
+        width: 50% !important;
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .CodeMirror,
+    .output-console,
+    textarea {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Dark mode media query support */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+        --theme-primary: #1e1e1e;
+        --theme-secondary: #252526;
+        --theme-text: #cccccc;
+    }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .panel-actions,
+    .settings-btn,
+    .modal {
+        display: none !important;
+    }
+    
+    .CodeMirror,
+    .output-console {
+        border: 1px solid #000;
+        max-height: none !important;
+    }
+}

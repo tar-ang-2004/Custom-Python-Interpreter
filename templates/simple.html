@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Python Interpreter - Simple Version</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .subtitle { font-size: 1.1em; opacity: 0.9; }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .panel {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .panel-header h2 { font-size: 1.3em; color: #495057; }
+        
+        textarea {
+            width: 100%;
+            min-height: 400px;
+            padding: 15px;
+            border: none;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        
+        .output-content, .repl-output {
+            padding: 15px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active { display: flex; }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .modal-header h2 { color: #495057; }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #6c757d;
+            line-height: 1;
+        }
+        
+        .close-modal:hover { color: #dc3545; }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .input-list {
+            margin-top: 15px;
+        }
+        
+        .input-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .input-item input {
+            flex: 1;
+        }
+        
+        .input-item button {
+            padding: 8px 15px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        
+        .output-error {
+            color: #f48771;
+            background: rgba(244, 135, 113, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #f48771;
+        }
+        
+        .output-success { color: #4ec9b0; }
+        
+        .variables-content {
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .variable-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .variable-item:hover {
+            background: #e9ecef;
+            transform: translateX(3px);
+        }
+        
+        .variable-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        
+        .variable-name {
+            font-weight: bold;
+            color: #495057;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        
+        .variable-type {
+            font-size: 11px;
+            color: #9d4edd;
+            font-weight: 600;
+        }
+        
+        .variable-value {
+            color: #6c757d;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .variable-actions {
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .variable-item:hover .variable-actions {
+            opacity: 1;
+        }
+        
+        .var-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        
+        .var-btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .var-btn-delete:hover {
+            background: #c82333;
+        }
+        
+        .var-btn-copy {
+            background: #667eea;
+            color: white;
+        }
+        
+        .var-btn-copy:hover {
+            background: #5568d3;
+        }
+        
+        .variable-search {
+            padding: 8px;
+            margin: 10px 0;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 13px;
+        }
+        
+        .variable-search:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .variables-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .variables-stats {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .input-panel {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .input-panel-content {
+            padding: 15px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            min-height: 150px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .input-prompt-label {
+            color: #4ec9b0;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .input-add-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .input-add-field {
+            flex: 1;
+            padding: 10px;
+            background: #2d2d2d;
+            border: 2px solid #3e3e3e;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #d4d4d4;
+        }
+        
+        .input-add-field:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #252526;
+        }
+        
+        .input-values-list {
+            margin-top: 15px;
+        }
+        
+        .input-value-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            margin: 5px 0;
+            background: #252526;
+            border-radius: 5px;
+            border-left: 4px solid #4ec9b0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+        }
+        
+        .input-value-item span {
+            color: #4ec9b0;
+            font-weight: bold;
+            margin-right: 10px;
+            min-width: 100px;
+        }
+        
+        .input-value-text {
+            flex: 1;
+            padding: 5px 10px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 3px;
+            margin-right: 10px;
+        }
+        
+        .input-complete-msg {
+            color: #4ec9b0;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            padding: 10px;
+            background: rgba(78, 201, 176, 0.1);
+            border-radius: 5px;
+        }
+        
+        /* Mode Toggle Switch */
+        .mode-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .mode-toggle-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .mode-toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+        
+        .mode-toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .mode-toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #667eea;
+            transition: 0.4s;
+            border-radius: 30px;
+        }
+        
+        .mode-toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .mode-toggle-slider {
+            background-color: #764ba2;
+        }
+        
+        input:checked + .mode-toggle-slider:before {
+            transform: translateX(30px);
+        }
+        
+        .mode-label {
+            font-weight: 600;
+            font-size: 14px;
+            min-width: 80px;
+        }
+        
+        .mode-label.active {
+            color: #667eea;
+        }
+        
+        .status-bar {
+            padding: 10px 20px;
+            background: #2d2d2d;
+            color: #d4d4d4;
+            font-size: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        #status { color: #4ec9b0; }
+        
+        .repl-input-container {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #2d2d2d;
+            border-top: 1px solid #3e3e3e;
+        }
+        
+        .repl-prompt {
+            color: #4ec9b0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .repl-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            outline: none;
+        }
+        
+        .examples-section {
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+        }
+        
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .example-btn {
+            padding: 12px 20px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .example-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐍 Python Interpreter</h1>
+            <p class="subtitle">Write and execute Python code in your browser</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <!-- Mode Toggle Switch -->
+                <div class="mode-toggle-container">
+                    <span class="mode-label active" id="editorModeLabel">📝 Code Editor</span>
+                    <label class="mode-toggle-switch">
+                        <input type="checkbox" id="modeToggle" onchange="toggleMode()">
+                        <span class="mode-toggle-slider"></span>
+                    </label>
+                    <span class="mode-label" id="replModeLabel">💻 REPL Console</span>
+                </div>
+
+                <!-- Code Editor Panel -->
+                <div id="editorPanel" class="panel">
+                    <div class="panel-header">
+                        <h2>Code Editor <span id="editorStats" style="font-size: 12px; color: #6c757d; font-weight: normal;"></span></h2>
+                        <div>
+                            <button class="btn btn-primary" onclick="runCode()">▶ Run</button>
+                            <button class="btn btn-secondary" onclick="validateCode()">✓ Validate</button>
+                            <button class="btn btn-secondary" onclick="clearEditor()">🗑 Clear</button>
+                        </div>
+                    </div>
+                    <textarea id="codeEditor" placeholder="Write your Python code here..." oninput="updateEditorStats()">print("Hello, World!")
+print("Welcome to Python Interpreter!")
+
+# Try some calculations
+x = 10
+y = 20
+print(f"Sum: {x + y}")
+print(f"Product: {x * y}")</textarea>
+                </div>
+
+                <!-- REPL Console Panel -->
+                <div id="replPanel" class="panel" style="display: none;">
+                    <div class="panel-header">
+                        <h2>REPL Console</h2>
+                        <button class="btn btn-secondary" onclick="clearRepl()">Clear</button>
+                    </div>
+                    <div id="replOutput" class="repl-output"></div>
+                    <div class="repl-input-container">
+                        <span class="repl-prompt">>>> </span>
+                        <input type="text" id="replInput" class="repl-input" placeholder="Enter Python code..." onkeypress="handleReplEnter(event)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <!-- Input Panel -->
+                <div id="inputPanel" class="panel input-panel" style="display: none;">
+                    <div class="panel-header">
+                        <h2>📥 Input Values</h2>
+                        <button class="btn btn-secondary" onclick="clearInputPanel()">Clear</button>
+                    </div>
+                    <div class="input-panel-content">
+                        <label id="currentInputLabel" class="input-prompt-label">Add Input Value:</label>
+                        <div class="input-add-group">
+                            <input type="text" id="inputValueField" class="input-add-field" placeholder="Enter value..." onkeypress="handleInputFieldEnter(event)">
+                            <button class="btn btn-success" onclick="addInputFromPanel()">➕ Add</button>
+                        </div>
+                        <div id="inputValuesList" class="input-values-list">
+                            <!-- Input values will appear here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2>Output</h2>
+                        <button class="btn btn-secondary" onclick="clearOutput()">Clear</button>
+                    </div>
+                    <div id="output" class="output-content">Output will appear here...</div>
+                </div>
+
+                <div class="panel" style="margin-top: 20px;">
+                    <div class="panel-header">
+                        <h2>Variables</h2>
+                        <div>
+                            <span id="varCount" class="variables-stats">0 variables</span>
+                            <button class="btn btn-secondary" onclick="refreshVariables()" style="margin-left: 10px;">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    <div style="padding: 10px;">
+                        <input type="text" id="varSearch" class="variable-search" placeholder="🔍 Search variables..." onkeyup="filterVariables()">
+                    </div>
+                    <div id="variables" class="variables-content">No variables defined</div>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px;">
+                    <button class="btn btn-danger" onclick="resetInterpreter()">Reset Interpreter</button>
+                    <button class="btn btn-secondary" onclick="downloadCode()">Download Code</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="examples-section">
+            <h3>Example Templates</h3>
+            <div class="examples-grid">
+                <button class="example-btn" onclick="loadExample('hello')">Hello World</button>
+                <button class="example-btn" onclick="loadExample('fibonacci')">Fibonacci</button>
+                <button class="example-btn" onclick="loadExample('class')">Class Example</button>
+                <button class="example-btn" onclick="loadExample('sorting')">Sorting</button>
+                <button class="example-btn" onclick="loadExample('comprehension')">List Comprehension</button>
+                <button class="example-btn" onclick="loadExample('decorator')">Decorator</button>
+                <button class="example-btn" onclick="loadExample('magic')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">🪄 Magic Commands</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Modal -->
+    <div id="inputModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📥 Input Required</h2>
+                <button class="close-modal" onclick="closeInputModal()">&times;</button>
+            </div>
+            
+            <p style="color: #6c757d; margin-bottom: 15px;">
+                Your code uses <code>input()</code> function. Please provide the values that will be returned for each <code>input()</code> call, in the order they appear in your code.
+            </p>
+            
+            <div class="input-group">
+                <label>Add Input Value:</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="newInputValue" placeholder="Enter value..." onkeypress="handleInputEnter(event)">
+                    <button class="btn btn-success" onclick="addInputValue()">➕ Add</button>
+                </div>
+            </div>
+            
+            <div class="input-list" id="inputList">
+                <!-- Input items will be added here -->
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeInputModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="executeWithInputs()">▶ Run Code</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span id="status">Ready</span>
+        <span id="lineCount">Lines: 8</span>
+    </div>
+
+    <script>
+        // Global variables
+        let inputValues = [];
+        let allVariables = {};
+        let inputPrompts = [];
+        let currentInputIndex = 0;
+        
+        // Example templates
+        const examples = {
+            hello: `print("Hello, World!")
+print("Welcome to Python Interpreter!")
+
+# Try some calculations
+x = 10
+y = 20
+print(f"Sum: {x + y}")
+print(f"Product: {x * y}")`,
+            
+            fibonacci: `# Fibonacci Sequence
+def fibonacci(n):
+    """Generate fibonacci sequence up to n terms"""
+    a, b = 0, 1
+    sequence = []
+    for _ in range(n):
+        sequence.append(a)
+        a, b = b, a + b
+    return sequence
+
+result = fibonacci(15)
+print("Fibonacci sequence:", result)
+
+def fib(n):
+    if n <= 1:
+        return n
+    return fib(n-1) + fib(n-2)
+
+print(f"10th fibonacci number: {fib(10)}")`,
+            
+            class: `# Class Example - Bank Account
+class BankAccount:
+    def __init__(self, owner, balance=0):
+        self.owner = owner
+        self.balance = balance
+    
+    def deposit(self, amount):
+        self.balance += amount
+        return f"Deposited ${amount}. Balance: ${self.balance}"
+    
+    def withdraw(self, amount):
+        if amount > self.balance:
+            return "Insufficient funds"
+        self.balance -= amount
+        return f"Withdrew ${amount}. Balance: ${self.balance}"
+
+account = BankAccount("Alice", 1000)
+print(account.deposit(500))
+print(account.withdraw(200))
+print(f"Final balance: ${account.balance}")`,
+            
+            sorting: `# Sorting Algorithms
+def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        for j in range(0, n - i - 1):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+    return arr
+
+def quick_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quick_sort(left) + middle + quick_sort(right)
+
+test_data = [64, 34, 25, 12, 22, 11, 90]
+print(f"Original: {test_data}")
+print(f"Bubble Sort: {bubble_sort(test_data.copy())}")
+print(f"Quick Sort: {quick_sort(test_data.copy())}")`,
+            
+            comprehension: `# List Comprehensions
+squares = [x**2 for x in range(10)]
+print("Squares:", squares)
+
+evens = [x for x in range(20) if x % 2 == 0]
+print("Even numbers:", evens)
+
+# Nested comprehension
+matrix = [[i * j for j in range(1, 6)] for i in range(1, 6)]
+print("\\nMultiplication table:")
+for row in matrix:
+    print(row)
+
+# Dictionary comprehension
+word = "python"
+char_count = {char: word.count(char) for char in set(word)}
+print(f"\\nCharacter count: {char_count}")`,
+            
+            decorator: `# Decorators Example
+import time
+
+def timer(func):
+    def wrapper(*args):
+        start = time.time()
+        result = func(*args)
+        end = time.time()
+        print(f"{func.__name__} took {end - start:.4f} seconds")
+        return result
+    return wrapper
+
+@timer
+def slow_function():
+    total = 0
+    for i in range(1000000):
+        total += i
+    return total
+
+result = slow_function()
+print(f"Result: {result}")`,
+            
+            magic: `# 🪄 Magic Commands Demo
+# Special commands starting with % for advanced features
+
+# Get help on magic commands
+%help
+
+# List all variables
+x = 10
+y = "hello"
+%vars
+
+# Time code execution
+%time sum(range(1000000))
+
+# More accurate timing (multiple runs)
+%timeit sorted([5,2,8,1,9])
+
+# Show execution history
+%history
+
+# Show variable details
+%whos
+
+# Delete a variable
+%delete y
+%vars
+
+# Save your session
+# %save my_session.py
+
+# Load a Python file
+# %load script.py
+
+# Clear output
+# %clear
+
+# Reset everything
+# %reset`
+        };
+
+        // Run code
+        async function runCode() {
+            console.log('Run button clicked!');
+            const code = document.getElementById('codeEditor').value.trim();
+            
+            if (!code) {
+                showError('No code to execute');
+                return;
+            }
+            
+            // Check if code contains input() function
+            if (code.includes('input(')) {
+                console.log('Code contains input() - using interactive terminal');
+                runCodeInteractive();
+                return;
+            }
+            
+            // Execute code without inputs
+            executeCode([]);
+        }
+        
+        // Interactive terminal for input() - shows prompts in output box
+        async function runCodeInteractive() {
+            const code = document.getElementById('codeEditor').value;
+            inputPrompts = extractInputPrompts(code);
+            inputValues = [];
+            currentInputIndex = 0;
+            
+            console.log('Interactive mode - prompts:', inputPrompts);
+            
+            // Clear output and show first prompt
+            const output = document.getElementById('output');
+            output.innerHTML = '';
+            
+            // Show next prompt
+            showNextInputPrompt();
+        }
+        
+        function showNextInputPrompt() {
+            const output = document.getElementById('output');
+            
+            if (currentInputIndex < inputPrompts.length) {
+                // Show the prompt
+                const promptText = inputPrompts[currentInputIndex];
+                const promptDiv = document.createElement('div');
+                promptDiv.style.color = '#d4d4d4';
+                promptDiv.style.marginBottom = '5px';
+                promptDiv.innerHTML = promptText;
+                output.appendChild(promptDiv);
+                
+                // Create input field inline
+                const inputLine = document.createElement('div');
+                inputLine.style.display = 'flex';
+                inputLine.style.alignItems = 'center';
+                inputLine.style.marginBottom = '10px';
+                
+                const inputField = document.createElement('input');
+                inputField.type = 'text';
+                inputField.id = 'terminalInput';
+                inputField.style.cssText = `
+                    flex: 1;
+                    background: #2d2d2d;
+                    border: 1px solid #3e3e3e;
+                    color: #4ec9b0;
+                    padding: 5px 10px;
+                    font-family: 'Consolas', 'Monaco', monospace;
+                    font-size: 13px;
+                    outline: none;
+                `;
+                
+                inputField.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        handleTerminalInput(this.value);
+                    }
+                });
+                
+                inputLine.appendChild(inputField);
+                output.appendChild(inputLine);
+                
+                // Auto focus
+                inputField.focus();
+                
+                // Scroll to bottom
+                output.scrollTop = output.scrollHeight;
+            } else {
+                // All inputs collected - execute code
+                executeCode(inputValues);
+            }
+        }
+        
+        function handleTerminalInput(value) {
+            const output = document.getElementById('output');
+            const inputField = document.getElementById('terminalInput');
+            
+            if (!value) return;
+            
+            // Store the value
+            inputValues.push(value);
+            
+            // Show the entered value (echo it)
+            const valueDiv = document.createElement('div');
+            valueDiv.style.color = '#4ec9b0';
+            valueDiv.style.marginBottom = '10px';
+            valueDiv.textContent = value;
+            
+            // Replace input field with the value
+            const inputLine = inputField.parentElement;
+            inputLine.innerHTML = '';
+            inputLine.appendChild(valueDiv);
+            
+            currentInputIndex++;
+            
+            // Show next prompt or execute
+            showNextInputPrompt();
+        }
+        
+        // Execute code with or without inputs
+        async function executeCode(inputs) {
+            const code = document.getElementById('codeEditor').value.trim();
+            updateStatus('Executing...');
+            
+            try {
+                console.log('Sending request to /api/execute');
+                const requestBody = { code: code };
+                if (inputs && inputs.length > 0) {
+                    requestBody.inputs = inputs;
+                    console.log('Including inputs:', inputs);
+                }
+                
+                const response = await fetch('/api/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Result:', result);
+                
+                displayOutput(result);
+                refreshVariables();
+                
+                updateStatus(result.success ? 'Execution completed' : 'Execution failed');
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Network error: ' + error.message);
+                updateStatus('Error');
+            }
+        }
+
+        // Input modal handling
+        
+        function extractInputPrompts(code) {
+            // Extract all input() calls with their prompts
+            const prompts = [];
+            // Match input("prompt") or input('prompt')
+            const regex = /input\s*\(\s*["']([^"']+)["']\s*\)/g;
+            let match;
+            while ((match = regex.exec(code)) !== null) {
+                prompts.push(match[1]);
+            }
+            // If no prompts found, check for input() without arguments
+            if (prompts.length === 0) {
+                const simpleRegex = /input\s*\(\s*\)/g;
+                let count = 0;
+                while (simpleRegex.exec(code) !== null) {
+                    count++;
+                }
+                for (let i = 0; i < count; i++) {
+                    prompts.push(`Input ${i + 1}`);
+                }
+            }
+            return prompts;
+        }
+        
+        // Input Panel Functions (New approach - no modal)
+        function showInputPanel() {
+            // Extract prompts from code
+            const code = document.getElementById('codeEditor').value;
+            inputPrompts = extractInputPrompts(code);
+            inputValues = [];
+            currentInputIndex = 0;
+            
+            console.log('Extracted prompts:', inputPrompts);
+            
+            // Show the input panel
+            document.getElementById('inputPanel').style.display = 'block';
+            
+            // Update the label
+            updateInputPanelLabel();
+            
+            // Clear and focus
+            document.getElementById('inputValueField').value = '';
+            document.getElementById('inputValuesList').innerHTML = '<p style="color: #858585; text-align: center; font-style: italic;">No input values added yet.</p>';
+            document.getElementById('inputValueField').focus();
+            
+            // Scroll to input panel
+            document.getElementById('inputPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function updateInputPanelLabel() {
+            const label = document.getElementById('currentInputLabel');
+            const inputField = document.getElementById('inputValueField');
+            const addBtn = inputField.nextElementSibling;
+            
+            if (currentInputIndex < inputPrompts.length) {
+                label.textContent = inputPrompts[currentInputIndex];
+                inputField.style.display = 'block';
+                addBtn.style.display = 'block';
+            } else {
+                // All inputs filled
+                label.textContent = '✅ All inputs complete!';
+                inputField.style.display = 'none';
+                addBtn.style.display = 'none';
+            }
+        }
+        
+        function handleInputFieldEnter(event) {
+            if (event.key === 'Enter') {
+                addInputFromPanel();
+            }
+        }
+        
+        function addInputFromPanel() {
+            const input = document.getElementById('inputValueField');
+            const value = input.value;
+            
+            if (value) {
+                inputValues.push(value);
+                currentInputIndex++;
+                updateInputPanelList();
+                updateInputPanelLabel();
+                input.value = '';
+                input.focus();
+                
+                // If all inputs filled, auto-run after a brief moment
+                if (currentInputIndex >= inputPrompts.length && inputPrompts.length > 0) {
+                    setTimeout(() => {
+                        executeCode(inputValues);
+                    }, 500);
+                }
+            }
+        }
+        
+        function removeInputFromPanel(index) {
+            inputValues.splice(index, 1);
+            currentInputIndex--;
+            updateInputPanelList();
+            updateInputPanelLabel();
+        }
+        
+        function updateInputPanelList() {
+            const list = document.getElementById('inputValuesList');
+            
+            if (inputValues.length === 0) {
+                list.innerHTML = '<p style="color: #858585; text-align: center; font-style: italic;">No input values added yet.</p>';
+            } else {
+                let html = inputValues.map((val, idx) => {
+                    const promptLabel = idx < inputPrompts.length ? inputPrompts[idx] : `Input ${idx + 1}`;
+                    return `
+                    <div class="input-value-item">
+                        <span>${promptLabel}</span>
+                        <div class="input-value-text">${val}</div>
+                        <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="removeInputFromPanel(${idx})">Remove</button>
+                    </div>
+                    `;
+                }).join('');
+                
+                // Show completion message if all inputs are filled
+                if (inputValues.length >= inputPrompts.length && inputPrompts.length > 0) {
+                    html += '<div class="input-complete-msg">✅ All inputs complete! Running code...</div>';
+                }
+                
+                list.innerHTML = html;
+            }
+        }
+        
+        function clearInputPanel() {
+            inputValues = [];
+            currentInputIndex = 0;
+            document.getElementById('inputValueField').value = '';
+            document.getElementById('inputValuesList').innerHTML = '<p style="color: #858585; text-align: center; font-style: italic;">No input values added yet.</p>';
+            document.getElementById('inputPanel').style.display = 'none';
+        }
+        
+        // Keep modal functions for backward compatibility
+        function updateInputPrompt() {
+            const label = document.querySelector('#inputModal .input-group label');
+            const inputGroup = document.querySelector('#inputModal .input-group');
+            
+            if (currentInputIndex < inputPrompts.length) {
+                label.textContent = inputPrompts[currentInputIndex];
+                inputGroup.style.display = 'block';
+            } else {
+                // All prompts filled - hide input field
+                inputGroup.style.display = 'none';
+            }
+        }
+        
+        function runCodeWithInputs() {
+            console.log('🎯 runCodeWithInputs() called - showing modal');
+            inputValues = [];
+            currentInputIndex = 0;
+            
+            // Extract prompts from code
+            const code = document.getElementById('codeEditor').value;
+            inputPrompts = extractInputPrompts(code);
+            console.log('Extracted prompts:', inputPrompts);
+            
+            document.getElementById('inputList').innerHTML = '';
+            document.getElementById('newInputValue').value = '';
+            
+            // Update the label with the first prompt
+            updateInputPrompt();
+            
+            const modal = document.getElementById('inputModal');
+            console.log('Modal element:', modal);
+            modal.classList.add('active');
+            console.log('Modal classList after add:', modal.classList);
+            document.getElementById('newInputValue').focus();
+        }
+        
+        function closeInputModal() {
+            document.getElementById('inputModal').classList.remove('active');
+        }
+        
+        function handleInputEnter(event) {
+            if (event.key === 'Enter') {
+                addInputValue();
+            }
+        }
+        
+        function addInputValue() {
+            const input = document.getElementById('newInputValue');
+            const value = input.value;
+            
+            if (value) {
+                inputValues.push(value);
+                currentInputIndex++;
+                updateInputList();
+                updateInputPrompt(); // Update to next prompt
+                input.value = '';
+                input.focus();
+            }
+        }
+        
+        function removeInputValue(index) {
+            inputValues.splice(index, 1);
+            currentInputIndex--;
+            updateInputPrompt();
+            updateInputList();
+        }
+        
+        function updateInputList() {
+            const list = document.getElementById('inputList');
+            
+            if (inputValues.length === 0) {
+                list.innerHTML = '<p style="color: #6c757d; text-align: center;">No input values added yet. Add at least one value to continue.</p>';
+            } else {
+                let html = '<h4 style="color: #495057; margin-bottom: 10px;">Input Values (in order):</h4>' +
+                    inputValues.map((val, idx) => {
+                        const promptLabel = idx < inputPrompts.length ? inputPrompts[idx] : `Input ${idx + 1}`;
+                        return `
+                        <div class="input-item">
+                            <span style="color: #667eea; font-weight: bold;">${promptLabel}</span>
+                            <input type="text" value="${val}" readonly style="background: #f8f9fa;">
+                            <button onclick="removeInputValue(${idx})">Remove</button>
+                        </div>
+                    `}).join('');
+                
+                // Show completion message if all inputs are filled
+                if (inputValues.length >= inputPrompts.length && inputPrompts.length > 0) {
+                    html += '<p style="color: #28a745; text-align: center; margin-top: 15px; font-weight: bold;">✅ All inputs complete! Click "Run Code" to execute.</p>';
+                }
+                
+                list.innerHTML = html;
+            }
+        }
+        
+        async function executeWithInputs() {
+            if (inputValues.length === 0) {
+                alert('Please add at least one input value');
+                return;
+            }
+            
+            closeInputModal();
+            executeCode(inputValues);
+        }
+
+        // Validate code
+        async function validateCode() {
+            const code = document.getElementById('codeEditor').value.trim();
+            
+            if (!code) {
+                showError('No code to validate');
+                return;
+            }
+            
+            updateStatus('Validating...');
+            
+            try {
+                const response = await fetch('/api/validate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
+                
+                const result = await response.json();
+                
+                if (result.valid) {
+                    showSuccess('✓ Syntax is valid');
+                    updateStatus('Validation passed');
+                } else {
+                    showError('✗ ' + result.error);
+                    updateStatus('Validation failed');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            }
+        }
+
+        // Display output
+        function displayOutput(result) {
+            const outputDiv = document.getElementById('output');
+            
+            // Handle clear magic command
+            if (result.is_magic && result.clear_output) {
+                outputDiv.innerHTML = '';
+                return;
+            }
+            
+            // Check if we're in interactive mode (output already has content from prompts)
+            const isInteractiveMode = outputDiv.innerHTML.trim().length > 0 && inputValues.length > 0;
+            
+            if (!isInteractiveMode) {
+                outputDiv.innerHTML = '';
+            } else {
+                // Add separator line before output
+                const separator = document.createElement('div');
+                separator.style.cssText = 'border-top: 1px solid #3e3e3e; margin: 10px 0;';
+                outputDiv.appendChild(separator);
+            }
+            
+            // Add magic command indicator
+            if (result.is_magic) {
+                const magicIndicator = document.createElement('div');
+                magicIndicator.style.cssText = 'color: #9d4edd; font-weight: bold; margin-bottom: 10px; border-left: 3px solid #9d4edd; padding-left: 10px;';
+                magicIndicator.textContent = '🪄 Magic Command';
+                outputDiv.appendChild(magicIndicator);
+            }
+            
+            if (result.error) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'output-error';
+                errorDiv.textContent = result.error;
+                outputDiv.appendChild(errorDiv);
+            }
+            
+            if (result.output) {
+                const outputText = document.createElement('div');
+                outputText.className = 'output-success';
+                outputText.style.whiteSpace = 'pre-wrap';
+                outputText.textContent = result.output;
+                outputDiv.appendChild(outputText);
+            }
+            
+            // Scroll to bottom
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+            
+            // Show execution time if available
+            if (result.execution_time) {
+                const timeDiv = document.createElement('div');
+                timeDiv.style.cssText = 'margin-top: 10px; padding: 8px; background: #e8f5e9; color: #2e7d32; border-radius: 4px; font-size: 12px;';
+                timeDiv.textContent = `⏱️ Execution time: ${result.execution_time.toFixed(6)} seconds`;
+                outputDiv.appendChild(timeDiv);
+            }
+            
+            if (!result.error && !result.output && !result.is_magic) {
+                outputDiv.textContent = 'Code executed successfully with no output';
+            }
+        }
+
+        // Refresh variables
+        
+        async function refreshVariables() {
+            try {
+                const response = await fetch('/api/variables');
+                const data = await response.json();
+                
+                allVariables = data.variables;
+                displayVariables(allVariables);
+                
+                // Update count
+                const count = Object.keys(allVariables).length;
+                document.getElementById('varCount').textContent = `${count} variable${count !== 1 ? 's' : ''}`;
+            } catch (error) {
+                console.error('Error refreshing variables:', error);
+            }
+        }
+        
+        function displayVariables(vars) {
+            const varsDiv = document.getElementById('variables');
+            varsDiv.innerHTML = '';
+            
+            if (Object.keys(vars).length === 0) {
+                varsDiv.textContent = 'No variables defined';
+                return;
+            }
+            
+            for (const [name, value] of Object.entries(vars)) {
+                const varItem = document.createElement('div');
+                varItem.className = 'variable-item';
+                varItem.dataset.name = name;
+                
+                // Determine type
+                const type = getVarType(value);
+                
+                varItem.innerHTML = `
+                    <div class="variable-info">
+                        <div class="variable-name">${escapeHtml(name)}</div>
+                        <div class="variable-type">${type}</div>
+                    </div>
+                    <div class="variable-value" title="${escapeHtml(value)}">${escapeHtml(value)}</div>
+                    <div class="variable-actions">
+                        <button class="var-btn var-btn-copy" onclick="copyVariable('${escapeHtml(name)}')" title="Copy value">📋</button>
+                        <button class="var-btn var-btn-delete" onclick="deleteVariable('${escapeHtml(name)}')" title="Delete">🗑️</button>
+                    </div>
+                `;
+                varsDiv.appendChild(varItem);
+            }
+        }
+        
+        function getVarType(value) {
+            if (value === 'None') return 'None';
+            if (value === 'True' || value === 'False') return 'bool';
+            if (value.match(/^-?\d+$/)) return 'int';
+            if (value.match(/^-?\d+\.\d+$/)) return 'float';
+            if (value.startsWith("'") || value.startsWith('"')) return 'str';
+            if (value.startsWith('[') && value.endsWith(']')) return 'list';
+            if (value.startsWith('(') && value.endsWith(')')) return 'tuple';
+            if (value.startsWith('{') && value.endsWith('}')) {
+                return value.includes(':') ? 'dict' : 'set';
+            }
+            if (value.startsWith('<function')) return 'function';
+            if (value.startsWith('<') && value.includes('object')) return 'object';
+            return 'unknown';
+        }
+        
+        function filterVariables() {
+            const search = document.getElementById('varSearch').value.toLowerCase();
+            if (!search) {
+                displayVariables(allVariables);
+                return;
+            }
+            
+            const filtered = {};
+            for (const [name, value] of Object.entries(allVariables)) {
+                if (name.toLowerCase().includes(search) || value.toLowerCase().includes(search)) {
+                    filtered[name] = value;
+                }
+            }
+            displayVariables(filtered);
+        }
+        
+        function copyVariable(name) {
+            const value = allVariables[name];
+            navigator.clipboard.writeText(value).then(() => {
+                showSuccess(`Copied ${name} to clipboard!`);
+            }).catch(err => {
+                showError('Failed to copy: ' + err);
+            });
+        }
+        
+        async function deleteVariable(name) {
+            if (!confirm(`Delete variable '${name}'?`)) return;
+            
+            try {
+                const response = await fetch('/api/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: `%delete ${name}` })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showSuccess(`Deleted variable: ${name}`);
+                    refreshVariables();
+                } else {
+                    showError(result.error);
+                }
+            } catch (error) {
+                showError('Error deleting variable: ' + error.message);
+            }
+        }
+
+        // REPL handling
+        function handleReplEnter(event) {
+            if (event.key === 'Enter') {
+                executeReplLine();
+            }
+        }
+
+        async function executeReplLine() {
+            const input = document.getElementById('replInput');
+            const line = input.value.trim();
+            
+            if (!line) return;
+            
+            addReplLine(`>>> ${line}`, 'input');
+            input.value = '';
+            
+            try {
+                const response = await fetch('/api/execute_line', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ line: line })
+                });
+                
+                const result = await response.json();
+                
+                if (result.output) {
+                    addReplLine(result.output.trim(), 'output');
+                }
+                
+                if (result.error) {
+                    addReplLine(result.error, 'error');
+                }
+                
+                refreshVariables();
+            } catch (error) {
+                addReplLine('Error: ' + error.message, 'error');
+            }
+        }
+
+        function addReplLine(text, type) {
+            const replOutput = document.getElementById('replOutput');
+            const line = document.createElement('div');
+            line.style.color = type === 'error' ? '#f48771' : (type === 'input' ? '#4ec9b0' : '#ce9178');
+            line.textContent = text;
+            replOutput.appendChild(line);
+            replOutput.scrollTop = replOutput.scrollHeight;
+        }
+
+        // Reset interpreter
+        async function resetInterpreter() {
+            if (!confirm('Reset interpreter? This will clear all variables.')) return;
+            
+            try {
+                const response = await fetch('/api/reset', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    clearOutput();
+                    clearRepl();
+                    document.getElementById('variables').textContent = 'No variables defined';
+                    showSuccess('Interpreter reset successfully');
+                    updateStatus('Reset complete');
+                }
+            } catch (error) {
+                showError('Error resetting: ' + error.message);
+            }
+        }
+
+        // Helper functions
+        function clearEditor() {
+            if (confirm('Clear editor content?')) {
+                document.getElementById('codeEditor').value = '';
+                updateLineCount();
+            }
+        }
+
+        function clearOutput() {
+            document.getElementById('output').textContent = 'Output will appear here...';
+        }
+
+        function clearRepl() {
+            document.getElementById('replOutput').innerHTML = '';
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        function updateLineCount() {
+            const lines = document.getElementById('codeEditor').value.split('\\n').length;
+            document.getElementById('lineCount').textContent = `Lines: ${lines}`;
+        }
+
+        function showSuccess(message) {
+            document.getElementById('output').innerHTML = `<div class="output-success">${escapeHtml(message)}</div>`;
+        }
+
+        function showError(message) {
+            document.getElementById('output').innerHTML = `<div class="output-error">${escapeHtml(message)}</div>`;
+        }
+
+        function downloadCode() {
+            const code = document.getElementById('codeEditor').value;
+            const blob = new Blob([code], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'code.py';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        
+        // Mode Toggle Function
+        function toggleMode() {
+            const toggle = document.getElementById('modeToggle');
+            const editorPanel = document.getElementById('editorPanel');
+            const replPanel = document.getElementById('replPanel');
+            const editorLabel = document.getElementById('editorModeLabel');
+            const replLabel = document.getElementById('replModeLabel');
+            
+            if (toggle.checked) {
+                // Switch to REPL mode
+                editorPanel.style.display = 'none';
+                replPanel.style.display = 'block';
+                editorLabel.classList.remove('active');
+                replLabel.classList.add('active');
+                
+                // Focus on REPL input
+                setTimeout(() => {
+                    document.getElementById('replInput').focus();
+                }, 100);
+            } else {
+                // Switch to Editor mode
+                editorPanel.style.display = 'block';
+                replPanel.style.display = 'none';
+                editorLabel.classList.add('active');
+                replLabel.classList.remove('active');
+                
+                // Focus on editor
+                setTimeout(() => {
+                    document.getElementById('codeEditor').focus();
+                }, 100);
+            }
+        }
+        
+        function loadExample(name) {
+            if (examples[name]) {
+                document.getElementById('codeEditor').value = examples[name];
+                updateLineCount();
+                updateEditorStats();
+                updateStatus(`Loaded ${name} example`);
+            }
+        }
+        
+        function updateEditorStats() {
+            const code = document.getElementById('codeEditor').value;
+            const lines = code.split('\n').length;
+            const chars = code.length;
+            const words = code.trim().split(/\s+/).length;
+            document.getElementById('editorStats').textContent = `${lines} lines, ${chars} chars`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Update line count on input
+        document.getElementById('codeEditor').addEventListener('input', updateLineCount);
+
+        // Initialize
+        console.log('Simple interpreter loaded successfully!');
+        updateLineCount();
+        updateEditorStats();
+        refreshVariables();
+    </script>
+    
+    <!-- Theme System -->
+    <script src="{{ url_for('static', filename='themes.js') }}"></script>
+    <script src="{{ url_for('static', filename='settings-ui.js') }}"></script>
+</body>
+</html>

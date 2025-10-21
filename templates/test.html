@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Python Interpreter - Test</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        button { 
+            padding: 12px 24px; 
+            margin: 5px; 
+            cursor: pointer;
+            min-height: 44px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        #output { 
+            border: 1px solid #ccc; 
+            padding: 15px; 
+            margin-top: 10px; 
+            min-height: 100px; 
+            background: #f5f5f5;
+            border-radius: 5px;
+            word-wrap: break-word;
+        }
+        textarea { 
+            width: 100%; 
+            height: 200px; 
+            font-family: monospace;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            textarea { height: 150px; font-size: 12px; }
+            button { width: 100%; margin: 5px 0; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Python Interpreter Test</h1>
+    <textarea id="code">print("Hello, World!")
+x = 10
+y = 20
+print(f"Sum: {x + y}")</textarea>
+    <br>
+    <button onclick="testRun()">Test Run</button>
+    <button onclick="testValidate()">Test Validate</button>
+    <div id="output"></div>
+
+    <script>
+        function testRun() {
+            const code = document.getElementById('code').value;
+            const output = document.getElementById('output');
+            output.innerHTML = 'Running...';
+            
+            fetch('/api/execute', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code: code })
+            })
+            .then(response => response.json())
+            .then(data => {
+                output.innerHTML = '<h3>Result:</h3>' +
+                    '<p><strong>Success:</strong> ' + data.success + '</p>' +
+                    '<p><strong>Output:</strong> <pre>' + data.output + '</pre></p>' +
+                    '<p><strong>Error:</strong> <pre>' + data.error + '</pre></p>' +
+                    '<p><strong>Variables:</strong> <pre>' + JSON.stringify(data.variables, null, 2) + '</pre></p>';
+            })
+            .catch(error => {
+                output.innerHTML = '<p style="color: red;">Error: ' + error + '</p>';
+            });
+        }
+
+        function testValidate() {
+            const code = document.getElementById('code').value;
+            const output = document.getElementById('output');
+            output.innerHTML = 'Validating...';
+            
+            fetch('/api/validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code: code })
+            })
+            .then(response => response.json())
+            .then(data => {
+                output.innerHTML = '<h3>Validation Result:</h3>' +
+                    '<p><strong>Valid:</strong> ' + data.valid + '</p>' +
+                    '<p><strong>Error:</strong> ' + data.error + '</p>';
+            })
+            .catch(error => {
+                output.innerHTML = '<p style="color: red;">Error: ' + error + '</p>';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1e1e1e">
+    <title>🐍 poontHER - Advanced Python Interpreter</title>
+    
+    <!-- Split.js for resizable panels -->
+    <script src="https://unpkg.com/split.js@1.6.5/dist/split.min.js"></script>
+    
+    <!-- CodeMirror -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/solarized.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- xterm.js for terminal -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
+    
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='advanced.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}">
+</head>
+<body data-theme="dark">
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <div class="nav-brand">
+            <span class="brand-icon">🐍</span>
+            <span class="brand-name">poontHER</span>
+        </div>
+        
+        <!-- Center area (search moved to global display center) -->
+        <div class="nav-center">
+            <div class="nav-center-content">
+                <!-- placeholder kept empty to preserve layout -->
+            </div>
+        </div>
+
+    <div class="nav-controls icon-toolbar">
+            <!-- Icon-only toolbar buttons: keep IDs for JS hooks, add accessible aria-labels
+                 each button contains an icon and a hidden label that appears on hover/focus -->
+            <button class="nav-icon-btn" id="newSessionBtn" aria-label="New Session" data-label="New">
+                <i class="fas fa-file"></i>
+                <span class="icon-label">New</span>
+            </button>
+            <button class="nav-icon-btn" id="saveCodeBtn" aria-label="Save Code" data-label="Save">
+                <i class="fas fa-save"></i>
+                <span class="icon-label">Save</span>
+            </button>
+            <button class="nav-icon-btn" id="loadFileBtn" aria-label="Load" data-label="Load">
+                <i class="fas fa-folder-open"></i>
+                <span class="icon-label">Load</span>
+            </button>
+            <!-- Hidden inputs for file/folder selection -->
+            <input type="file" id="fileInput" accept=".py,.txt" style="display: none;">
+            <input type="file" id="multiFileInput" accept=".py,.txt" multiple style="display: none;">
+            <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
+            <button class="nav-icon-btn" id="clearConsoleBtn" aria-label="Clear Output" data-label="Clear">
+                <i class="fas fa-eraser"></i>
+                <span class="icon-label">Clear</span>
+            </button>
+            <button class="nav-icon-btn theme-toggle" id="themeToggleBtn" aria-label="Toggle Theme" data-label="Theme" style="background:transparent !important; box-shadow:none !important; border:none !important;">
+                <i class="fas fa-moon"></i>
+                <span class="icon-label">Theme</span>
+            </button>
+            <!-- Spotify integration button -->
+            <button class="nav-icon-btn" id="spotifyBtn" aria-label="Spotify" data-label="Spotify">
+                <i class="fab fa-spotify"></i>
+                <span class="icon-label">Spotify</span>
+            </button>
+            <button class="nav-icon-btn" id="settingsBtn" aria-label="Settings" data-label="Settings">
+                <i class="fas fa-cog"></i>
+                <span class="icon-label">Settings</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Global centered search (placed in middle of display) -->
+    <div id="globalSearchCenter" class="global-search-center">
+        <div class="nav-search-center" id="navSearchCenter">
+            <i class="fas fa-search nav-search-icon" aria-hidden="true"></i>
+            <input id="centerSearchInput" class="center-search-input" type="search" placeholder="Search code, output, variables, REPL..." aria-label="Search">
+            <button id="centerSearchClear" class="center-search-clear" aria-label="Clear search"><i class="fas fa-times" aria-hidden="true"></i></button>
+            <div id="centerSearchResults" class="center-search-results" role="listbox" aria-label="Search results"></div>
+        </div>
+    </div>
+
+    <!-- Main Split Container -->
+    <div class="main-container">
+        <!-- Left Panel: Code Editor / REPL -->
+        <div class="split-panel left-panel" id="leftPanel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fas fa-code" id="panelIcon"></i> <span id="panelTitle">Code Editor</span>
+                </div>
+                <div class="panel-actions">
+                    <button class="icon-btn run-btn" id="runCodeBtn" title="Run Code (Shift+Enter)">
+                        <i class="fas fa-play"></i> Run
+                    </button>
+                    <button class="icon-btn" id="validateSyntaxBtn" title="Validate Syntax">
+                        <i class="fas fa-check-circle"></i>
+                    </button>
+                    <!-- moved tab controls: New / View (now sit beside Run/Validate) -->
+                    <div class="tab-controls" id="tabControls">
+                        <button class="icon-btn" id="newTabBtn" title="New File"><i class="fas fa-plus"></i></button>
+                        <button class="icon-btn" id="viewOutlineBtn" title="View Outline">View</button>
+                    </div>
+                    <!-- Mode Switcher -->
+                    <div class="mode-switcher">
+                        <span class="mode-label">Editor</span>
+                        <label class="mode-toggle">
+                            <input type="checkbox" id="modeToggle">
+                            <span class="mode-slider"></span>
+                        </label>
+                        <span class="mode-label">REPL</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Tab bar for multi-file editor -->
+            <div class="tab-bar" id="tabBar">
+                <div class="tabs-wrapper">
+                    <div class="tabs" id="tabsContainer" role="tablist" aria-label="Open files"></div>
+                    <!-- REPL-mode tabs (hidden by default) -->
+                    <div class="tabs hidden" id="replTabsContainer" role="tablist" aria-label="REPL sessions"></div>
+                </div>
+                <!-- tab-controls moved into panel-actions -->
+            </div>
+            
+            <!-- Code Editor Mode -->
+            <div class="editor-wrapper" id="editorMode">
+                <textarea id="codeEditor"></textarea>
+            </div>
+            
+            <!-- REPL Mode -->
+            <div class="repl-wrapper hidden" id="replMode">
+                <div class="repl-output" id="replOutput">
+                    <div class="welcome-message">
+                        <i class="fas fa-terminal"></i>
+                        <p>Python REPL Mode</p>
+                        <p class="subtitle">Type Python commands and press <kbd>Enter</kbd> to execute.</p>
+                        <p class="subtitle">Use <kbd>↑</kbd> <kbd>↓</kbd> to navigate history.</p>
+                    </div>
+                </div>
+                <div class="repl-input-container">
+                    <span class="repl-prompt">>>> </span>
+                    <input type="text" id="replInput" class="repl-input" placeholder="Enter Python code..." autocomplete="off">
+                </div>
+            </div>
+            
+            <!-- Command History Sidebar (collapsible) -->
+            <div class="history-sidebar collapsed" id="historySidebar">
+                <div class="sidebar-header">
+                    <span><i class="fas fa-history"></i> History</span>
+                    <button class="icon-btn" id="toggleHistoryBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="empty-state">No command history yet</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Output & Variables -->
+        <div class="split-panel right-panel" id="rightPanel">
+            <!-- Output Console -->
+            <div class="output-container" id="outputContainer">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i class="fas fa-terminal"></i> Output Console
+                    </div>
+                    <div class="panel-actions">
+                        <span class="execution-time" id="executionTime">0.000s</span>
+                        <button class="icon-btn" id="clearOutputBtn" title="Clear Output (Ctrl+L)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <!-- Interactive view switch: slider toggle (hidden until a figure is opened) -->
+                        <div id="interactiveSwitch" class="interactive-switch hidden" aria-hidden="true" title="Switch view">
+                            <div class="mode-switcher">
+                                <span class="mode-label">Output</span>
+                                <label class="mode-toggle">
+                                    <input type="checkbox" id="interactiveToggle" aria-label="Toggle Output / InView">
+                                    <span class="mode-slider"></span>
+                                </label>
+                                <span class="mode-label">InView</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="output-console" id="outputConsole">
+                    <div class="welcome-message">
+                        <i class="fas fa-rocket"></i>
+                        <p>Welcome to poontHER!</p>
+                        <p class="subtitle">Write Python code and press <kbd>Shift+Enter</kbd> to execute.</p>
+                    </div>
+                </div>
+                
+                <!-- Interactive View (hidden until a graph is opened) -->
+                <div class="interactive-container hidden" id="interactiveContainer">
+                    <div class="interactive-content" id="interactiveContent">
+                        <!-- Populated dynamically with the clicked figure -->
+                    </div>
+                </div>
+                
+                <!-- xterm.js Terminal Container (hidden by default, shown during input) -->
+                <div id="xtermContainer" style="display: none;"></div>
+            </div>
+
+            <!-- Variable Explorer -->
+            <div class="variables-container" id="variablesContainer">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i class="fas fa-database"></i> Variable Explorer
+                    </div>
+                    <div class="panel-actions">
+                        <button class="icon-btn" id="refreshVarsBtn" title="Refresh Variables">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                        <button class="icon-btn" id="clearVarsBtn" title="Clear Variables">
+                            <i class="fas fa-broom"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="variables-content" id="variablesContent">
+                    <div class="empty-state">No variables defined</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Status Bar -->
+    <div class="status-bar">
+        <div class="status-left">
+            <span class="status-item" id="statusIndicator">
+                <i class="fas fa-circle status-ready"></i> Ready
+            </span>
+            <span class="status-item" id="sessionInfo">
+                <i class="fas fa-user-circle"></i> Session: <span id="sessionId">-</span>
+            </span>
+            <!-- Filename display and rename control -->
+            <span class="status-item" id="fileInfo">
+                <i class="fas fa-file-code"></i>
+                <span id="fileNameDisplay" title="Double-click to rename">untitled.py</span>
+            </span>
+        </div>
+        
+        <div class="status-center">
+            <span class="status-item" id="lineInfo">
+                Ln <span id="cursorLine">1</span>, Col <span id="cursorCol">1</span>
+            </span>
+            <span class="status-item">
+                Lines: <span id="totalLines">0</span>
+            </span>
+        </div>
+        
+        <div class="status-right">
+            <!-- Encoding selector (persisted to pyinter-settings) -->
+            <span class="status-item" id="encodingControl" title="File encoding">
+                <select id="encodingSelect" aria-label="File encoding" style="background:transparent;border:0;color:inherit">
+                    <option value="utf-8">UTF-8</option>
+                    <option value="utf-8-sig">UTF-8 with BOM</option>
+                    <option value="utf-16">UTF-16</option>
+                    <option value="iso-8859-1">ISO-8859-1</option>
+                    <option value="windows-1252">Windows-1252</option>
+                </select>
+            </span>
+            <span class="status-item" id="memoryInfo">
+                <i class="fas fa-memory"></i> <span id="memoryUsage">-</span>
+            </span>
+            <span class="status-item" id="pythonVersion">
+                <i class="fab fa-python"></i> Python 3.13
+            </span>
+            <!-- Output summary: pass / warning / error counts -->
+            <span class="status-item status-counts">
+                <span class="status-count status-pass" title="Passing lines">
+                    <i class="fas fa-check-circle" style="color: var(--accent-success)"></i>
+                    <span id="passCountNum">0</span>
+                </span>
+                <span class="status-count status-warning" title="Warning lines">
+                    <i class="fas fa-exclamation-triangle" style="color: #dcdc6a"></i>
+                    <span id="warningCountNum">0</span>
+                </span>
+                <span class="status-count status-error" title="Error lines">
+                    <i class="fas fa-times-circle" style="color: #f48771"></i>
+                    <span id="errorCountNum">0</span>
+                </span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> Settings</h2>
+                <button class="close-btn" id="closeSettingsBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3>Editor</h3>
+                    <div class="setting-item">
+                        <label for="editorTheme">Editor Theme</label>
+                        <select id="editorTheme" class="setting-input">
+                            <option value="monokai">Monokai</option>
+                            <option value="dracula">Dracula</option>
+                            <option value="material">Material</option>
+                            <option value="solarized dark">Solarized Dark</option>
+                            <option value="solarized light">Solarized Light</option>
+                            <option value="eclipse">Eclipse</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="editorFontSize">Font Size</label>
+                        <input type="range" id="editorFontSize" class="setting-input" min="10" max="24" value="14">
+                        <span id="fontSizeValue">14px</span>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="lineNumbersToggle">Line Numbers</label>
+                        <label class="switch">
+                            <input type="checkbox" id="lineNumbersToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="autoCompleteToggle">Auto Complete</label>
+                        <label class="switch">
+                            <input type="checkbox" id="autoCompleteToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>Console</h3>
+                    <div class="setting-item">
+                        <label for="consoleFontSize">Font Size</label>
+                        <input type="range" id="consoleFontSize" class="setting-input" min="10" max="20" value="13">
+                        <span id="consoleFontSizeValue">13px</span>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="soundToggle">Sound Effects</label>
+                        <label class="switch">
+                            <input type="checkbox" id="soundToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>Shortcuts</h3>
+                    <div class="shortcuts-list">
+                        <div class="shortcut-item">
+                            <span>Run Code</span>
+                            <kbd>Shift+Enter</kbd>
+                        </div>
+                        <div class="shortcut-item">
+                            <span>Save Code</span>
+                            <kbd>Ctrl+S</kbd>
+                        </div>
+                        <div class="shortcut-item">
+                            <span>Clear Console</span>
+                            <kbd>Ctrl+L</kbd>
+                        </div>
+                        <div class="shortcut-item">
+                            <span>New Session</span>
+                            <kbd>Ctrl+N</kbd>
+                        </div>
+                        <div class="shortcut-item">
+                            <span>Comment Line</span>
+                            <kbd>Ctrl+/</kbd>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="resetSettingsBtn">
+                    <i class="fas fa-undo"></i> Reset to Default
+                </button>
+                <button class="btn btn-primary" id="saveSettingsBtn">
+                    <i class="fas fa-check"></i> Save Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Collection Modal -->
+    <div class="modal" id="inputModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-keyboard"></i> Provide Input Values</h2>
+                <button class="close-btn" id="closeInputModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <p style="margin-bottom: 15px; color: var(--text-secondary);">
+                    Your code uses <strong id="inputCount">0</strong> <code>input()</code> call(s).
+                    Please provide the values below (one per line):
+                </p>
+                <textarea id="inputValuesTextarea" 
+                          placeholder="Enter each input value on a new line...&#10;Example:&#10;John&#10;25&#10;85.5" 
+                          style="width: 100%; min-height: 200px; padding: 12px; font-family: var(--font-mono); font-size: 14px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 4px; resize: vertical;"></textarea>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelInputBtn">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn btn-primary" id="submitInputsBtn">
+                    <i class="fas fa-play"></i> Run with Inputs
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename File Modal (glassmorphism) -->
+    <div class="modal" id="renameModal" aria-hidden="true">
+        <div class="modal-content rename-modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> Rename file</h2>
+                <button class="close-btn" id="closeRenameModalBtn" aria-label="Close rename dialog">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <label for="renameInput" style="display:block; margin-bottom:8px; color:var(--text-secondary);">Rename file:</label>
+                <input id="renameInput" type="text" class="rename-input" placeholder="untitled.py" style="width:100%; padding:12px 14px; font-family:var(--font-mono); font-size:14px; border-radius:8px; border:1px solid var(--border-color); background:rgba(255,255,255,0.02); color:var(--text-primary);" />
+                <div class="rename-hint" style="margin-top:8px; font-size:12px; color:var(--text-tertiary);">Tip: don't include folders or path separators. <strong>".py"</strong> will be added if omitted.</div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelRenameBtn">Cancel</button>
+                <button class="btn btn-primary" id="confirmRenameBtn">Rename</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spotify Modal -->
+    <div class="modal" id="spotifyModal">
+        <div class="modal-content spotify-modal-content">
+            <div class="modal-header">
+                <h2><i class="fab fa-spotify"></i> Spotify</h2>
+                <button class="close-btn" id="closeSpotifyBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="spotify-auth" id="spotifyAuth">
+                    <p class="spotify-status">Not connected</p>
+                    <button class="btn btn-primary" id="spotifyLoginBtn">Connect to Spotify</button>
+                </div>
+
+                <div class="spotify-controls hidden" id="spotifyControls">
+                    <div class="spotify-search">
+                        <input type="search" id="spotifySearchInput" placeholder="Search for songs, albums or artists..." style="width:100%; padding:8px;">
+                        <div style="height:8px"></div>
+                        <div class="spotify-search-actions">
+                            <button class="btn btn-secondary" id="spotifySearchBtn">Search</button>
+                            <select id="spotifyTypeSelect">
+                                <option value="track">Track</option>
+                                <option value="album">Album</option>
+                                <option value="artist">Artist</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="spotify-results" id="spotifyResults" style="margin-top:12px; max-height:320px; overflow:auto;"></div>
+
+                    <div class="spotify-playback" style="margin-top:12px; display:flex; gap:8px; align-items:center;">
+                        <button class="btn btn-secondary spotify-ctrl" id="spotifyPrevBtn"><i class="fas fa-backward"></i></button>
+                        <button class="btn btn-primary spotify-ctrl spotify-main" id="spotifyPlayPauseBtn"><i class="fas fa-play"></i></button>
+                        <button class="btn btn-secondary spotify-ctrl" id="spotifyNextBtn"><i class="fas fa-forward"></i></button>
+
+                        <div id="spotifyNowPlaying" class="spotify-nowplaying" style="margin-left:12px; display:flex; align-items:center; gap:10px; min-width:0;">
+                            <img id="spotifyNowCover" src="" alt="cover" class="spotify-cover" style="width:56px; height:56px; object-fit:cover; border-radius:8px; display:none;">
+                            <div class="spotify-now-meta" style="display:flex; flex-direction:column; gap:2px; min-width:0;">
+                                <div id="spotifyNowTitle" style="font-weight:600; color:var(--theme-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:420px;">Not playing</div>
+                                <div id="spotifyNowArtist" style="font-size:12px; color:var(--theme-textSecondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:420px;">&nbsp;</div>
+                            </div>
+                        </div>
+
+                        <select id="spotifyDeviceSelect" style="margin-left:12px; background:var(--bg-primary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px; border-radius:6px;">
+                            <option value="">Default device</option>
+                        </select>
+
+                        <!-- Seek slider and time labels -->
+                        <div id="spotifySeekContainer" style="display:flex; align-items:center; gap:8px; margin-left:12px; flex:1; min-width:0;">
+                            <span id="spotifyCurrentTime" style="font-size:12px; color:var(--text-secondary); min-width:40px; text-align:center;">0:00</span>
+                            <input type="range" id="spotifySeekSlider" min="0" max="100" value="0" step="1" style="flex:1;">
+                            <span id="spotifyTotalTime" style="font-size:12px; color:var(--text-secondary); min-width:40px; text-align:center;">0:00</span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner" aria-hidden="true"></div>
+            <!-- Removed persistent "Executing..." text so the spinner is unobtrusive.
+                 Status text is now driven by JS via the status indicator in the footer. -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- xterm.js -->
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+    
+    <!-- CodeMirror -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    <script>
+        // Initialize encoding select from saved settings (pyinter-settings in localStorage)
+        (function() {
+            try {
+                const settingsKey = 'pyinter-settings';
+                const select = document.getElementById('encodingSelect');
+                if (!select) return;
+
+                const raw = localStorage.getItem(settingsKey);
+                if (raw) {
+                    try {
+                        const parsed = JSON.parse(raw);
+                        if (parsed && parsed.encoding) {
+                            select.value = parsed.encoding;
+                        }
+                    } catch (e) {
+                        console.warn('Failed to parse pyinter-settings', e);
+                    }
+                }
+
+                select.addEventListener('change', function() {
+                    let parsed = {};
+                    try {
+                        const raw2 = localStorage.getItem(settingsKey);
+                        parsed = raw2 ? JSON.parse(raw2) : {};
+                    } catch (e) { parsed = {}; }
+
+                    parsed.encoding = this.value;
+                    try { localStorage.setItem(settingsKey, JSON.stringify(parsed)); }
+                    catch (e) { console.warn('Failed to save encoding to localStorage', e); }
+                });
+            } catch (err) {
+                console.error('Encoding init error', err);
+            }
+        })();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/python-hint.min.js"></script>
+    <!-- Folding addons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/indent-fold.min.js"></script>
+    
+    <!-- Theme System -->
+    <script src="{{ url_for('static', filename='themes.js') }}"></script>
+    <script src="{{ url_for('static', filename='settings-ui.js') }}"></script>
+    
+    <script src="{{ url_for('static', filename='advanced.js') }}"></script>
+    <!-- Defensive script: force theme toggle to remain backgroundless
+         This runs after theme CSS/JS and keeps the button transparent even
+         if themes.js or runtime code tries to reapply an accent background. -->
+    <script>
+    (function(){
+        function clearThemeToggle(){
+            try {
+                const el = document.getElementById('themeToggleBtn');
+                if(!el) return;
+                const set = (k,v) => el.style.setProperty(k, v, 'important');
+                set('background', 'transparent');
+                set('background-color', 'transparent');
+                set('box-shadow', 'none');
+                set('border', 'none');
+                set('width', 'auto');
+                set('height', 'auto');
+                // clear icon background too
+                const icon = el.querySelector('i');
+                if(icon) {
+                    ['background','background-color','box-shadow','border'].forEach(k=> icon.style.setProperty(k,'transparent','important'));
+                    icon.style.setProperty('padding','0','important');
+                    icon.style.setProperty('margin','0','important');
+                }
+                // clear parent surfaces
+                const parent = el.closest('.nav-controls') || el.closest('.top-navbar');
+                if(parent) {
+                    ['background','background-color','box-shadow','border'].forEach(k=> parent.style.setProperty(k,'transparent','important'));
+                }
+            } catch (err) { console.warn('clearThemeToggle failed', err); }
+        }
+
+        document.addEventListener('DOMContentLoaded', function(){
+            clearThemeToggle();
+            const el = document.getElementById('themeToggleBtn');
+            if(!el) return;
+            // keep clearing if anything mutates (style/class changes)
+            const obs = new MutationObserver(() => clearThemeToggle());
+            obs.observe(el, { attributes: true, attributeFilter: ['style','class'] });
+            const parent = el.closest('.nav-controls');
+            if(parent) obs.observe(parent, { attributes: true, attributeFilter: ['style','class'] });
+        });
+    })();
+    </script>
+
+</body>
+</html>
