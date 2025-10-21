@@ -84,48 +84,172 @@ A comprehensive web-based Python interpreter built with pure Python and Flask. W
   - Change Theme 🎨
   - Clear Console 🧹
   - List Variables 📋
-  - Run Script ▶️
-  - Reset Interpreter 🔄
-  - Download Code 💾
-  - Load Example 📚
-  - Switch Editor/REPL 💻
-  - Show Help ❓
+  PyInter — Custom Python Interpreter & Web IDE
 
-- **Smart Error Hints**: Context-aware error suggestions
-  - NameError suggestions (spelling, definition, quotes)
-  - SyntaxError help (colons, quotes, indentation)
-  - TypeError guidance (data types, conversion)
-  - IndexError hints (0-indexing, len())
-  - KeyError solutions (.get(), spelling)
-  - ZeroDivisionError prevention
+  PyInter is a lightweight custom Python interpreter exposed via a web-based IDE. It provides a browser interface to write, run, and debug Python code with features such as per-line syntax validation, REPL-style execution, variable inspection, input provisioning, execution history, and optional Spotify integration in the UI.
 
-- **Hover Documentation**: Function information on hover
-  - Function signatures
-  - Parameter descriptions
-  - Usage examples
-  - Supported: print, len, range, input
+  This repository contains a Flask web application that serves multiple editor pages (a modern Tailwind-based UI, a CodeMirror-based editor, a simple page, and an 'advanced' view) and a small custom interpreter backend implemented in `python_interpreter.py`.
 
-- **Signature Help**: Parameter hints (Shift+Tab)
-  - Complete function signatures
-  - Parameter highlighting
-  - Description text
-  - Auto-hide after 5 seconds
+  Table of contents
+  - Features
+  - Quick start
+  - Running the app (development)
+  - Project structure
+  - API endpoints
+  - Security and sandboxing notes
+  - Development & testing
+  - Contributing
+  - License
 
-- **Keyboard Shortcuts**: Efficient workflow
-  - `Ctrl+Shift+P`: Open Command Palette
-  - `Ctrl+Enter`: Execute code
-  - `Shift+Tab`: Show signature help
-  - `Escape`: Close popups
 
-### 🎨 Visual Design Features
-- **Theme System**: 5 professional themes
-  - 🌑 Dark (default)
-  - 🔵 Blue Ocean
-  - 💜 Purple Haze
-  - 🌲 Forest Green
-  - 🟡 Amber Glow
-  - Live theme switching
-  - LocalStorage persistence
+  ## Features
+
+  - Web IDE pages (served from `templates/`):
+    - `advanced.html` — feature-rich UI with extra integrations.
+    - `modern.html` — Tailwind-based modern UI.
+    - `index.html` (original) — CodeMirror-based editor.
+    - `simple.html` and `test.html` — lightweight pages for quick testing.
+  - Custom Python interpreter with:
+    - Execute full scripts (`exec`) or expressions (`eval`).
+    - Execute single lines (REPL-style).
+    - Per-line syntax validation and lightweight semantic checks.
+    - Inspection of variables and serialized values.
+    - Execution history tracking.
+    - Programmatic input provisioning for code that uses `input()`.
+  - Spotify helper endpoints to enable playback and search integration from the UI (optional and requires Spotify OAuth).
+
+
+  ## Quick start
+
+  Requirements
+
+  - Python 3.10+ recommended.
+  - The minimal dependencies are listed in `requirements.txt` (Flask and Werkzeug pinned there).
+
+  Install dependencies
+
+  ```powershell
+  python -m venv .venv
+  .\\.venv\\Scripts\\Activate.ps1
+  pip install -r requirements.txt
+  ```
+
+  Run the app (development)
+
+  ```powershell
+  # from repository root
+  python app.py
+  ```
+
+  By default the Flask app runs on http://localhost:5000. Open that URL in your browser and choose one of the editor pages.
+
+
+  ## Project structure (important files)
+
+  - `app.py` — Flask application and HTTP API that powers the Web IDE.
+  - `python_interpreter.py` — the custom interpreter implementation (execution, history, variables, serialization).
+  - `templates/` — HTML templates for different UI pages (`advanced.html`, `modern.html`, `index.html`, `simple.html`, `test.html`).
+  - `static/` — CSS, JS, images and other frontend assets used by the editor pages.
+  - `requirements.txt` — pinned Python dependencies for the project.
+  - `test_interpreter.py` — tests for the interpreter (if present).
+
+
+  ## API endpoints
+
+  The server exposes a small JSON API used by the frontend. All API routes are under `/api` unless noted.
+
+  - `POST /api/execute` — Execute a block of Python code.
+    - Body JSON: `{ "code": "...", "mode": "exec" | "eval", "inputs": ["...", ...] }`
+    - Response: `{ success, output, error, result, variables, timestamp }`
+
+  - `POST /api/execute_line` — Execute a single line (REPL-style).
+    - Body JSON: `{ "line": "..." }`
+
+  - `POST /api/provide_input` — Provide a value to continue a paused execution waiting for input.
+    - Body JSON: `{ "value": "..." }`
+
+  - `POST /api/validate` — Syntax-only validation for a code block.
+    - Body JSON: `{ "code": "..." }`
+    - Response: `{ valid: true|false, error: null|string }`
+
+  - `POST /api/validate_lines` — Validate multiple lines and run a simple semantic check for undefined names.
+    - Body JSON: `{ "lines": ["line1", "line2", ...] }`
+    - Response: `{ results: [{ valid: true|false|null, error }, ...] }`
+
+  - `GET /api/variables` — Returns serialized variables from the interpreter namespace.
+
+  - `GET /api/history` — Returns execution history.
+
+  - `POST /api/reset` — Reset the interpreter state (clear variables and history).
+
+  - `POST /api/set_variable` — Set a variable by evaluating a value expression.
+
+  Additionally the app exposes several Spotify helper endpoints used by the advanced UI (login, callback, play, pause, search, devices, etc.). These require Spotify OAuth credentials to be useful.
+
+
+  ## Security and sandboxing notes (important)
+
+  This project runs user-provided Python code on the server. By design the interpreter provides convenience features (full execution, variable access, history), but running arbitrary Python code on a server is inherently dangerous. Consider the following before deploying publicly:
+
+  - Current repo is suitable for local development or trusted networks only. It does not provide a secure sandbox for untrusted code.
+  - The interpreter shares a global interpreter instance by default (all users share the same namespace). This is simpler for local use, but not suitable for multi-tenant public deployments. You can revert to per-session interpreters in `app.py` (code is present in comments).
+  - If you plan to expose this publicly, consider one or more of:
+    - Running each session inside a dedicated, short-lived container (Docker, Firecracker, gVisor).
+    - Enforcing strict resource limits (CPU, memory, execution timeouts).
+    - Running code under a restricted user with filesystem and network access limited.
+    - Using language-level sandboxing (e.g., restricted AST evaluation) and whitelisting safe modules only.
+    - Disallowing dangerous builtins and modules. The interpreter already serializes values carefully, but it does not fully sandbox import/use of system resources.
+
+  Treat this project as an educational and local tool unless you add strong sandboxing.
+
+
+  ## Development notes
+
+  - The server's entrypoint is `app.py`. It uses Flask to serve HTML pages and JSON API endpoints.
+  - The custom interpreter implementation is in `python_interpreter.py`. It manages execution, captured stdout/stderr, variable serialization, and history.
+  - Frontend assets live in `static/` and `templates/`. The modern UI uses Tailwind classes (if you want a prettier UI, you can add a Tailwind build step).
+
+  Testing
+
+  - If `test_interpreter.py` exists, run it with pytest:
+
+  ```powershell
+  pip install pytest
+  pytest -q
+  ```
+
+
+  ## Contributing
+
+  If you'd like to contribute:
+
+  1. Open an issue describing your idea or bug.
+  2. Create a branch with a clear name (e.g., `feature/repl-timeout`, `fix/serialize-bytes`).
+  3. Add tests for new behavior where appropriate.
+  4. Open a pull request and describe the change.
+
+  Suggested improvements
+
+  - Add a `.gitignore` to exclude `__pycache__`, virtual env folders, and large media files.
+  - Move Spotify client secrets into environment variables or a config file (don't commit secrets).
+  - Improve sandboxing for secure public hosting.
+  - Add CI (GitHub Actions) to run tests and linting.
+
+
+  ## License
+
+  This repository does not include a license file. If you intend to make this open-source, add an appropriate `LICENSE` file (MIT, Apache-2.0, etc.).
+
+
+  ---
+
+  If you'd like, I can:
+
+  - Add a helpful `.gitignore` and remove `__pycache__` and large media from the repo history.
+  - Move Spotify secrets to environment variables and update `app.py` to read them.
+  - Add a small GitHub Actions workflow to run tests on push.
+
+  Tell me which of those you'd like next and I'll implement them.
 
 - **Custom Prompts**: Terminal-style prompts with:
   - Current time display [HH:MM:SS]
