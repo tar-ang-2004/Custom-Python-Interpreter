@@ -108,6 +108,16 @@ Common flows:
 
 For client-side integrations, the endpoints return JSON describing success, captured stdout/stderr, result values, and serialized variables.
 
+## Screenshots
+
+Below is a screenshot of the IDE (the image is bundled in the repository under the `poontHER images/` folder):
+
+![IDE Screenshot](poontHER%20images/Screenshot%202025-10-21%20161831.png)
+
+If you prefer the path without percent-encoding, it will also render on GitHub:
+
+![IDE Screenshot]("poontHER images/Screenshot 2025-10-21 161831.png")
+
 ## API reference (summary)
 
 - GET `/` — Render the advanced UI page.
@@ -193,4 +203,3 @@ Contributions are welcome. A suggested workflow:
 2. Create a feature branch: `git checkout -b feat/my-change`.
 3. Run and add tests for new behavior.
 4. Open a pull request describing your changes.
-
