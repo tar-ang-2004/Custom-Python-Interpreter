@@ -194,18 +194,3 @@ Contributions are welcome. A suggested workflow:
 3. Run and add tests for new behavior.
 4. Open a pull request describing your changes.
 
-Suggested low-risk improvements:
-- Add optional per-session interpreter instances with proper cleanup.
-- Add Dockerfile and containerized sandboxes for safer execution.
-- Improve frontend UIs and add authentication for multi-user setups.
-- Add a lightweight job queue and worker process to run code with timeouts and memory limits.
-
-## License
-
-This repository does not currently include an explicit license file. If you plan to redistribute or allow contributions, add an appropriate LICENSE (for example, MIT, Apache-2.0) and update this section.
-
-## Credits
-
-- Built with Flask. Frontend uses static assets in `static/` (various CSS/JS files and templates included).
-
-If you want any part of this README expanded (examples, code snippets, or a Docker setup), tell me which area to expand and I'll add it.
