@@ -1,670 +1,211 @@
-# 🐍 Python Interpreter Web IDE
-
-A comprehensive web-based Python interpreter built with pure Python and Flask. Write, execute, and debug Python code directly in your browser with a beautiful, modern interface.
-
-## ✨ Features
-
-### ✨ Delight & Micro-Interactions (NEW!)
-- **Animated Feedback**: Smooth, professional animations
-  - Code editor focus pulse effect
-  - Success checkmark draw-in animation
-  - Command execution progress bar with gradient shimmer
-  - Status icon pop animations
-
-- **Enhanced Toast Notifications**: Non-intrusive feedback
-  - Slide-in from right with bounce
-  - Auto-dismiss with progress countdown
-  - Type-based icons (✓ success, ✗ error, ⚠ warning, ℹ info)
-  - Manual close option
-  - Beautiful glass effect with blur
-
-- **Welcome Screen**: Professional first-time experience
-  - Animated logo with pulse
-  - Version information
-  - Quick keyboard shortcuts reference
-  - Smooth fade-in/fade-out transitions
-  - "Start New Session" CTA button
-
-- **Visual Success/Error Cues**: Instant feedback
-  - Green checkmark for successful execution
-  - Red error flash with shake animation
-  - Fire flicker for critical errors
-  - Automatic 2-second display
-
-- **Button Ripple Effects**: Material Design interactions
-  - Click position-aware ripples
-  - Applied to all buttons automatically
-  - Smooth fade-out animation
-  - Professional tactile feedback
-
-- **Progress Indicators**: Real-time execution feedback
-  - Top progress bar (3px gradient)
-  - Shimmer animation during execution
-  - Smooth width transitions (0% → 30% → 100%)
-  - Long command notifications (> 2s)
-
-### 📊 Information Visualization
-- **Enhanced Variable Explorer**: Advanced variable inspection
-  - Expandable collections (lists, dicts, tuples, sets)
-  - Color-coded type indicators
-  - Size information for collections
-  - Detailed views with first 20 items
-  - Quick copy and delete actions
-  - Real-time search and filtering
-
-- **Execution Stats Panel**: Real-time performance metrics
-  - ⏱️ Execution time tracking (ms)
-  - 💾 Memory usage estimates
-  - ⚡ Total execution count
-  - Automatic updates after each run
-
-- **Command History Panel**: Full execution history
-  - Last 50 commands stored
-  - Searchable and filterable
-  - Re-run any command instantly (▶ Run)
-  - Edit commands before re-running (✎ Edit)
-  - Delete individual items (🗑 Delete)
-  - Clear all history option
-  - Timestamp and success/failure indicators
-
-- **Output Renderer**: Enhanced output display (foundation)
-  - Styled error messages
-  - Code formatting
-  - Ready for DataFrames, charts, JSON, images
-
-### 🎯 Interactive Features
-- **Autocomplete & IntelliSense**: Smart code suggestions as you type
-  - 21 Python keywords (if, for, def, class, etc.)
-  - 22 Built-in functions (print, len, range, etc.)
-  - 23 Common methods (append, split, join, etc.)
-  - Session variables tracking
-  - Type indicators (🔑 keyword, ⚡ function, 🔧 method, 📦 variable)
-
-- **Command Palette**: VSCode-style quick access (Ctrl+Shift+P)
-  - Change Theme 🎨
-  - Clear Console 🧹
-  - List Variables 📋
-  PyInter — Custom Python Interpreter & Web IDE
-
-  PyInter is a lightweight custom Python interpreter exposed via a web-based IDE. It provides a browser interface to write, run, and debug Python code with features such as per-line syntax validation, REPL-style execution, variable inspection, input provisioning, execution history, and optional Spotify integration in the UI.
-
-  This repository contains a Flask web application that serves multiple editor pages (a modern Tailwind-based UI, a CodeMirror-based editor, a simple page, and an 'advanced' view) and a small custom interpreter backend implemented in `python_interpreter.py`.
+# Custom Python Interpreter — Web IDE
 
-  Table of contents
-  - Features
-  - Quick start
-  - Running the app (development)
-  - Project structure
-  - API endpoints
-  - Security and sandboxing notes
-  - Development & testing
-  - Contributing
-  - License
+This repository contains a lightweight, self-hosted web-based Python interpreter and Web IDE. It provides an interactive environment to write, execute, and debug Python code from a browser. The project is ideal for learning, teaching, prototyping, and demos where a simple, embeddable Python execution environment is useful.
 
+The project includes a Flask server that hosts multiple front-end editor pages (modern, advanced, simple, and original CodeMirror variants), a reusable `PythonInterpreter` backend, and a small set of utilities and static assets (CSS/JS) for a web-based IDE experience.
 
-  ## Features
+Table of contents
+- Overview
+- Features
+- Architecture
+- Installation
+- Running the app
+- Usage
+- API reference
+- Security considerations
+- Development
+- Testing
+- Troubleshooting
+- Contributing
+- License
+- Credits
 
-  - Web IDE pages (served from `templates/`):
-    - `advanced.html` — feature-rich UI with extra integrations.
-    - `modern.html` — Tailwind-based modern UI.
-    - `index.html` (original) — CodeMirror-based editor.
-    - `simple.html` and `test.html` — lightweight pages for quick testing.
-  - Custom Python interpreter with:
-    - Execute full scripts (`exec`) or expressions (`eval`).
-    - Execute single lines (REPL-style).
-    - Per-line syntax validation and lightweight semantic checks.
-    - Inspection of variables and serialized values.
-    - Execution history tracking.
-    - Programmatic input provisioning for code that uses `input()`.
-  - Spotify helper endpoints to enable playback and search integration from the UI (optional and requires Spotify OAuth).
+## Overview
 
+The Custom Python Interpreter Web IDE provides an in-browser coding environment backed by a Python execution engine. It exposes REST endpoints for executing code, validating syntax, inspecting variables, retrieving execution history, and controlling a REPL-like interaction (including providing input values to paused runs).
 
-  ## Quick start
+Key goals:
+- Offer a minimal, self-contained Python Web IDE that runs locally.
+- Make it easy to embed a Python execution surface into other web apps or teaching tools.
+- Provide multiple front-end editor templates (simple, modern, advanced) so you can pick the UI that suits your needs.
 
-  Requirements
+## Features
 
-  - Python 3.10+ recommended.
-  - The minimal dependencies are listed in `requirements.txt` (Flask and Werkzeug pinned there).
+- In-browser code editor pages (templates: `advanced.html`, `modern.html`, `simple.html`, `index.html`).
+- Execute multi-line scripts or single-line REPL-style commands.
+- Syntax validation without execution.
+- Inspect variables and serialized values in the current interpreter namespace.
+- Execution history retrieval and interpreter reset.
+- Per-request or global interpreter instance management (current default: single global interpreter).
+- Input provisioning for code that calls `input()` (queue values to be consumed by the interpreter).
+- Spotify integration helpers in the backend (optional: login, playback control, search) — included in `app.py` for convenience when running the advanced UI.
 
-  Install dependencies
+## Architecture
 
-  ```powershell
-  python -m venv .venv
-  .\\.venv\\Scripts\\Activate.ps1
-  pip install -r requirements.txt
-  ```
+- Flask application (`app.py`) serves HTML pages and a JSON API.
+- `python_interpreter.py` contains the `PythonInterpreter` class that manages execution, variables, history, input handling, and safe serialization of objects. (See the file for implementation details.)
+- Frontend templates in `templates/` use static assets from `static/` to create different editor experiences.
 
-  Run the app (development)
+The server currently uses a single global `PythonInterpreter` instance for simplicity (all users share a namespace). The code includes commented-out logic to switch to per-session interpreters if desired.
 
-  ```powershell
-  # from repository root
-  python app.py
-  ```
+## Installation
 
-  By default the Flask app runs on http://localhost:5000. Open that URL in your browser and choose one of the editor pages.
+Prerequisites
+- Python 3.10+ (the codebase uses language features compatible with modern Python; adjust if needed).
+- pip (for installing Python packages).
 
+Install dependencies
 
-  ## Project structure (important files)
+1. Create and activate a virtual environment (recommended):
 
-  - `app.py` — Flask application and HTTP API that powers the Web IDE.
-  - `python_interpreter.py` — the custom interpreter implementation (execution, history, variables, serialization).
-  - `templates/` — HTML templates for different UI pages (`advanced.html`, `modern.html`, `index.html`, `simple.html`, `test.html`).
-  - `static/` — CSS, JS, images and other frontend assets used by the editor pages.
-  - `requirements.txt` — pinned Python dependencies for the project.
-  - `test_interpreter.py` — tests for the interpreter (if present).
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
 
+2. Install required Python packages:
 
-  ## API endpoints
-
-  The server exposes a small JSON API used by the frontend. All API routes are under `/api` unless noted.
-
-  - `POST /api/execute` — Execute a block of Python code.
-    - Body JSON: `{ "code": "...", "mode": "exec" | "eval", "inputs": ["...", ...] }`
-    - Response: `{ success, output, error, result, variables, timestamp }`
-
-  - `POST /api/execute_line` — Execute a single line (REPL-style).
-    - Body JSON: `{ "line": "..." }`
-
-  - `POST /api/provide_input` — Provide a value to continue a paused execution waiting for input.
-    - Body JSON: `{ "value": "..." }`
-
-  - `POST /api/validate` — Syntax-only validation for a code block.
-    - Body JSON: `{ "code": "..." }`
-    - Response: `{ valid: true|false, error: null|string }`
-
-  - `POST /api/validate_lines` — Validate multiple lines and run a simple semantic check for undefined names.
-    - Body JSON: `{ "lines": ["line1", "line2", ...] }`
-    - Response: `{ results: [{ valid: true|false|null, error }, ...] }`
-
-  - `GET /api/variables` — Returns serialized variables from the interpreter namespace.
-
-  - `GET /api/history` — Returns execution history.
-
-  - `POST /api/reset` — Reset the interpreter state (clear variables and history).
-
-  - `POST /api/set_variable` — Set a variable by evaluating a value expression.
-
-  Additionally the app exposes several Spotify helper endpoints used by the advanced UI (login, callback, play, pause, search, devices, etc.). These require Spotify OAuth credentials to be useful.
-
-
-  ## Security and sandboxing notes (important)
-
-  This project runs user-provided Python code on the server. By design the interpreter provides convenience features (full execution, variable access, history), but running arbitrary Python code on a server is inherently dangerous. Consider the following before deploying publicly:
-
-  - Current repo is suitable for local development or trusted networks only. It does not provide a secure sandbox for untrusted code.
-  - The interpreter shares a global interpreter instance by default (all users share the same namespace). This is simpler for local use, but not suitable for multi-tenant public deployments. You can revert to per-session interpreters in `app.py` (code is present in comments).
-  - If you plan to expose this publicly, consider one or more of:
-    - Running each session inside a dedicated, short-lived container (Docker, Firecracker, gVisor).
-    - Enforcing strict resource limits (CPU, memory, execution timeouts).
-    - Running code under a restricted user with filesystem and network access limited.
-    - Using language-level sandboxing (e.g., restricted AST evaluation) and whitelisting safe modules only.
-    - Disallowing dangerous builtins and modules. The interpreter already serializes values carefully, but it does not fully sandbox import/use of system resources.
-
-  Treat this project as an educational and local tool unless you add strong sandboxing.
-
-
-  ## Development notes
-
-  - The server's entrypoint is `app.py`. It uses Flask to serve HTML pages and JSON API endpoints.
-  - The custom interpreter implementation is in `python_interpreter.py`. It manages execution, captured stdout/stderr, variable serialization, and history.
-  - Frontend assets live in `static/` and `templates/`. The modern UI uses Tailwind classes (if you want a prettier UI, you can add a Tailwind build step).
-
-  Testing
-
-  - If `test_interpreter.py` exists, run it with pytest:
-
-  ```powershell
-  pip install pytest
-  pytest -q
-  ```
-
-
-  ## Contributing
-
-  If you'd like to contribute:
-
-  1. Open an issue describing your idea or bug.
-  2. Create a branch with a clear name (e.g., `feature/repl-timeout`, `fix/serialize-bytes`).
-  3. Add tests for new behavior where appropriate.
-  4. Open a pull request and describe the change.
-
-  Suggested improvements
-
-  - Add a `.gitignore` to exclude `__pycache__`, virtual env folders, and large media files.
-  - Move Spotify client secrets into environment variables or a config file (don't commit secrets).
-  - Improve sandboxing for secure public hosting.
-  - Add CI (GitHub Actions) to run tests and linting.
-
-
-  ## License
-
-  This repository does not include a license file. If you intend to make this open-source, add an appropriate `LICENSE` file (MIT, Apache-2.0, etc.).
-
-
-  ---
-
-  If you'd like, I can:
-
-  - Add a helpful `.gitignore` and remove `__pycache__` and large media from the repo history.
-  - Move Spotify secrets to environment variables and update `app.py` to read them.
-  - Add a small GitHub Actions workflow to run tests on push.
-
-  Tell me which of those you'd like next and I'll implement them.
-
-- **Custom Prompts**: Terminal-style prompts with:
-  - Current time display [HH:MM:SS]
-  - Directory indicator (~/PyCode)
-  - Professional formatting
-
-- **Output Labels**: Color-coded execution results
-  - 📥 INPUT (green) - User code input
-  - 📤 OUTPUT (blue) - Execution results
-  - ❌ ERROR (red) - Error messages
-  - SVG icons with labels
-
-- **Typography**: Fira Code font with ligatures
-  - Professional code display
-  - Enhanced readability
-  - Syntax highlighting ready
-
-### Core Interpreter Features
-- **Full Python Support**: Execute complete Python programs including:
-  - Variables and data types
-  - Functions and lambda expressions
-  - Classes and object-oriented programming
-  - Control flow (if/else, loops, etc.)
-  - List comprehensions and generators
-  - Decorators and context managers
-  - Exception handling
-  - Import statements and modules
-
-### Web Interface Features
-- **Code Editor**: Modern editor with:
-  - Line numbers
-  - Syntax highlighting
-  - Bracket matching
-  - Auto-indentation
-  - Real-time autocomplete
-
-- **REPL Console**: Interactive Python shell for quick testing
-- **Real-time Output**: See execution results immediately
-- **Variable Inspector**: View all defined variables and their values
-- **Execution History**: Track all your code executions
-- **Syntax Validation**: Check code syntax before execution
-- **Error Handling**: Clear error messages with smart suggestions
-- **Code Templates**: Pre-built examples for common tasks
-- **File Operations**: Upload Python files or download your code
-
-## 🚀 Quick Start
-
-### Installation
-
-1. **Clone or download this repository**
-
-2. **Install dependencies**:
 ```powershell
 pip install -r requirements.txt
 ```
 
-### Running the Application
+The `requirements.txt` in this repository declares:
 
-**Option 1: Using Python directly**
+- Flask==3.0.0
+- Werkzeug==3.0.1
+
+If you plan to use the Spotify integration, the server uses the `requests` library which is included in the standard environment for many Python installations. If `requests` is missing, install it with `pip install requests`.
+
+## Running the app
+
+Start the Flask server from the repository root:
+
 ```powershell
 python app.py
 ```
 
-**Option 2: Using Flask command**
-```powershell
-$env:FLASK_APP = "app.py"
-$env:FLASK_ENV = "development"
-flask run
-```
+By default the server starts in debug mode and listens on port 5000. Open your browser at http://localhost:5000 to load the advanced editor UI. Alternative pages:
 
-3. **Open your browser** and navigate to:
-```
-http://localhost:5000
-```
+- `/modern` — modern Tailwind-based UI
+- `/simple` — minimal working editor
+- `/original` — original CodeMirror-based editor
+- `/test` — simple test page
 
-## 📖 Usage Guide
+Note: The app sets a random `app.secret_key` at startup using `secrets.token_hex(32)`, so session-based state is ephemeral between restarts.
 
-### Code Editor
-1. Write your Python code in the main editor
-2. Click **Run** button or press `Ctrl+Enter` to execute
-3. View output in the Output panel
-4. Check variables in the Variables panel
+## Usage
 
-### REPL Console
-1. Type Python code in the REPL input at the bottom
-2. Press `Enter` to execute
-3. See results immediately in the REPL output
+Open the UI in your browser and use the on-page editor to write Python code. The editor interacts with backend endpoints to run code, validate syntax, and fetch variables/history.
 
-### Example Templates
-Click any example button to load pre-built code:
-- **Hello World**: Basic print and input
-- **Fibonacci**: Recursive functions
-- **Class Example**: Object-oriented programming
-- **Sorting**: Algorithm implementations
-- **List Comprehension**: Advanced list operations
-- **Decorator**: Function decorators
+Common flows:
+- Execute multi-line code: POST to `/api/execute` with JSON { code: "...", mode: "exec" }.
+- Execute a single REPL line: POST to `/api/execute_line` with JSON { line: "..." }.
+- Provide queued input values: POST to `/api/provide_input` with JSON { value: "..." }.
+- Validate syntax: POST to `/api/validate` with JSON { code: "..." }.
+- List variables: GET `/api/variables`.
+- Get history: GET `/api/history`.
+- Reset interpreter: POST `/api/reset`.
 
-### Keyboard Shortcuts
-- `Ctrl+Shift+P`: Open Command Palette (quick access to all features)
-- `Ctrl+Enter`: Run code
-- `Shift+Tab`: Show function signature help
-- `Escape`: Close popups/palette
-- `Arrow Keys`: Navigate in Command Palette
-- `Enter`: Execute selected command
+For client-side integrations, the endpoints return JSON describing success, captured stdout/stderr, result values, and serialized variables.
 
-### Interactive Features Tutorial
-For a comprehensive guide to all interactive features, see:
-- **[INTERACTION_FEATURES.md](INTERACTION_FEATURES.md)** - Complete documentation
-- **[QUICK_START.md](QUICK_START.md)** - 5-minute tutorial
-- **[TESTING_PLAN.md](TESTING_PLAN.md)** - Testing checklist
+## API reference (summary)
 
-## 🏗️ Project Structure
+- GET `/` — Render the advanced UI page.
+- GET `/modern`, `/simple`, `/original`, `/test` — Render other UI variants.
+- POST `/api/execute` — Execute code (accepts `code`, `mode`, optional `inputs` array). Returns a JSON object with `success`, `output`, `error`, `result`, `variables`, `timestamp`.
+- POST `/api/execute_line` — Execute single line REPL.
+- POST `/api/provide_input` — Supply input value to the interpreter's input queue.
+- POST `/api/validate` — Syntax-only validation.
+- POST `/api/validate_lines` — Validate multiple lines with basic semantic checks (undefined names detection using AST analysis).
+- GET `/api/variables` — Get serialized variables in the current namespace.
+- GET `/api/history` — Get execution history.
+- POST `/api/reset` — Reset interpreter state.
+- POST `/api/set_variable` — Set a variable via expression evaluation.
+- GET `/health` — Basic health check.
 
-```
-RandomPI/
-├── app.py                  # Flask web application
-├── python_interpreter.py   # Core Python interpreter
-├── requirements.txt        # Python dependencies
-├── README.md              # This file
-├── templates/
-│   └── index.html         # Main HTML template
-└── static/
-    ├── style.css          # Styling
-    └── script.js          # Frontend JavaScript
-```
+Spotify-related endpoints (optional; require a Spotify account and the client ID/secret in `app.py`):
+- `/spotify/login`, `/spotify/callback`, and `/api/spotify/*` endpoints for search, playback control and status.
 
-## 🔧 API Endpoints
+## Security considerations
 
-### Execute Code
-```
-POST /api/execute
-Body: { "code": "print('Hello')", "mode": "exec" }
-```
+Important: This project executes arbitrary Python code on the server. Running it on a machine exposed to untrusted users or over the public internet is dangerous. Consider the following before deploying:
 
-### Execute Single Line (REPL)
-```
-POST /api/execute_line
-Body: { "line": "2 + 2" }
-```
+- Never run this server on a publicly reachable host without additional sandboxing.
+- Use OS-level sandboxing (containers, VMs) and resource limits to contain executions.
+- Consider running the interpreter worker as a separate process with restricted privileges and communication via IPC with strict timeouts.
+- Limit available builtins and shadow dangerous modules (the `PythonInterpreter` implementation may include serialization/sandboxing helpers — review it thoroughly).
+- Log and monitor activity; set execution timeouts and memory limits.
 
-### Validate Syntax
-```
-POST /api/validate
-Body: { "code": "print('test')" }
-```
+If you're using this for teaching in a closed classroom environment on a local network, it's reasonably safe, but still treat code execution with caution.
 
-### Get Variables
-```
-GET /api/variables
-```
+## Development
 
-### Get History
-```
-GET /api/history
-```
+Project layout (important files):
 
-### Reset Interpreter
-```
-POST /api/reset
-```
+- `app.py` — The Flask web server and API routes.
+- `python_interpreter.py` — Core interpreter abstraction (execution, variable management, history, serialization).
+- `templates/` — HTML templates for the front-end editor pages.
+- `static/` — CSS, JS and images used by the UIs.
+- `test_interpreter.py` — Basic tests / examples for the interpreter (use as a reference and test harness).
+- `marks_calculator.py`, `diagnostics.py`, `FINAL_INPUT_GUIDE.md`, `INPUT_GUIDE.md` — additional utilities and docs included in the repo.
 
-### Set Variable
-```
-POST /api/set_variable
-Body: { "name": "x", "value": "10" }
-```
+Coding tips
+- The app currently uses a single global interpreter. To switch to per-session interpreters, uncomment and adapt the session-based logic in `get_interpreter()` in `app.py`.
+- `python_interpreter.py` likely exposes these useful methods used by `app.py`: `execute`, `execute_line`, `provide_input`, `validate_syntax`, `get_all_variables`, `get_history`, `reset`, `_serialize_value`, `set_input_values`.
 
-## 🎨 Features in Detail
-
-### Python Interpreter (`python_interpreter.py`)
-
-The core interpreter class provides:
-
-**Methods**:
-- `execute(code, mode)`: Execute Python code
-- `execute_line(line)`: Execute single line (REPL-style)
-- `validate_syntax(code)`: Check syntax without executing
-- `get_variable(name)`: Get variable value
-- `set_variable(name, value)`: Set variable value
-- `get_all_variables()`: Get all defined variables
-- `reset()`: Reset interpreter state
-- `get_history()`: Get execution history
-
-**Features**:
-- Proper namespace management (global/local)
-- Output capturing (stdout/stderr)
-- Exception formatting and tracking
-- Execution history
-- Variable serialization
-
-### Flask Application (`app.py`)
-
-**Session Management**:
-- Each browser session gets its own interpreter instance
-- Sessions persist across page reloads
-- Automatic cleanup
-
-**Security**:
-- Session-based isolation
-- Secure secret key generation
-- Input validation
-
-## 🛠️ Advanced Usage
-
-### Running in Production
-
-For production deployment, use a WSGI server like Gunicorn:
+Running locally with code reload (development):
 
 ```powershell
-pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
+$Env:FLASK_APP='app.py'
+$Env:FLASK_ENV='development'
+python -m flask run
 ```
 
-### Custom Configuration
+Or simply run `python app.py` which already starts Flask with `debug=True`.
 
-Modify `app.py` to change:
-- Port number (default: 5000)
-- Host (default: 0.0.0.0)
-- Debug mode (default: True)
+## Testing
 
-### Adding Custom Examples
+There is `test_interpreter.py` included as an example/test harness. You can run it directly:
 
-Edit `static/script.js` and add to the `examples` object:
-
-```javascript
-examples.myexample = `# My Custom Example
-print("Hello from custom example!")`;
-```
-
-## 📝 Examples
-
-### Simple Calculation
-```python
-x = 10
-y = 20
-result = x + y
-print(f"Sum: {result}")
-```
-
-### Function Definition
-```python
-def greet(name):
-    return f"Hello, {name}!"
-
-message = greet("World")
-print(message)
-```
-
-### Class Example
-```python
-class Calculator:
-    def add(self, a, b):
-        return a + b
-    
-    def multiply(self, a, b):
-        return a * b
-
-calc = Calculator()
-print(calc.add(5, 3))
-print(calc.multiply(4, 7))
-```
-
-## 🐛 Troubleshooting
-
-### Port Already in Use
-If port 5000 is already in use, modify `app.py`:
-```python
-app.run(debug=True, host='0.0.0.0', port=5001)
-```
-
-### Import Errors
-Make sure all dependencies are installed:
 ```powershell
-pip install -r requirements.txt
+python test_interpreter.py
 ```
 
-### Browser Issues
-- Clear browser cache
-- Try a different browser
-- Check browser console for JavaScript errors
+Consider adding unit tests for `python_interpreter.py` focusing on:
+- Execution success/failure cases
+- Input queuing and `input()` behavior
+- Variable serialization edge cases
+- Reset behavior and history management
 
-## 🔒 Security Considerations
+## Troubleshooting
 
-**Important**: This interpreter executes arbitrary Python code. For production use:
+- If the server fails to start: ensure your Python environment has the packages in `requirements.txt` and that no other process is using port 5000.
+- Template rendering issues: make sure the `templates/` directory is present and Flask can access it from the running working directory.
+- Spotify endpoints failing: replace the client ID/secret with your own app credentials and ensure the redirect URI configured in Spotify Developer Dashboard matches `SPOTIFY_REDIRECT_URI`.
 
-1. **Sandboxing**: Implement code sandboxing
-2. **Resource Limits**: Set memory and CPU limits
-3. **Authentication**: Add user authentication
-4. **Input Validation**: Sanitize all inputs
-5. **Timeout**: Implement execution timeouts
-6. **Restricted Imports**: Limit dangerous module imports
+Inspect the Flask console logs — `app.py` prints helpful debug messages for execution requests.
 
-## 📚 Documentation
+## Contributing
 
-This project includes comprehensive documentation:
+Contributions are welcome. A suggested workflow:
 
-- **[README.md](README.md)** (this file) - Main project overview and setup guide
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feat/my-change`.
+3. Run and add tests for new behavior.
+4. Open a pull request describing your changes.
 
-- **[DELIGHT_FEATURES.md](DELIGHT_FEATURES.md)** - Phase 4 delight & micro-interactions (NEW!)
-  - Animated Feedback
-  - Enhanced Toast Notifications
-  - Welcome Screen
-  - Visual Success/Error Cues
-  - Button Ripple Effects
-  - Progress Indicators
-  - Usage examples and customization
+Suggested low-risk improvements:
+- Add optional per-session interpreter instances with proper cleanup.
+- Add Dockerfile and containerized sandboxes for safer execution.
+- Improve frontend UIs and add authentication for multi-user setups.
+- Add a lightweight job queue and worker process to run code with timeouts and memory limits.
 
-- **[VISUALIZATION_FEATURES.md](VISUALIZATION_FEATURES.md)** - Phase 3 features documentation
-  - Enhanced Variable Explorer
-  - Execution Stats Panel
-  - Command History Panel
-  - Output Renderer
-  - Usage examples and technical details
+## License
 
-- **[INTERACTION_FEATURES.md](INTERACTION_FEATURES.md)** - Phase 2 interactive features
-  - Autocomplete & IntelliSense
-  - Command Palette
-  - Smart Error Hints
-  - Hover Documentation
-  - Signature Help
-  - Keyboard Shortcuts
-  - Technical implementation details
-  - 350+ lines of detailed documentation
+This repository does not currently include an explicit license file. If you plan to redistribute or allow contributions, add an appropriate LICENSE (for example, MIT, Apache-2.0) and update this section.
 
-- **[QUICK_START.md](QUICK_START.md)** - Quick start guide
-  - 5-minute tutorial
-  - Essential shortcuts
-  - Tips & tricks
-  - Troubleshooting
+## Credits
 
-- **[TESTING_PLAN.md](TESTING_PLAN.md)** - Comprehensive testing checklist
-  - 75+ test cases
-  - Cross-browser testing
-  - Performance tests
-  - Edge case scenarios
+- Built with Flask. Frontend uses static assets in `static/` (various CSS/JS files and templates included).
 
-- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Implementation details
-  - Feature checklist
-  - Code statistics
-  - Implementation timeline
-
-## 🤝 Contributing
-
-Feel free to enhance this project! Areas for improvement:
-- Add more function documentation to hover system
-- Implement variable value previews
-- Add code snippets library
-- Support for custom keyboard shortcuts
-- Expand autocomplete with import suggestions
-- Add code formatting (PEP 8)
-- Implement linting integration
-- Multi-file project support
-- Debugger integration
-- Package manager integration
-
-## 📄 License
-
-This project is open source and available for educational purposes.
-
-## 🙏 Acknowledgments
-
-- Built with Flask web framework
-- Tailwind CSS for modern styling
-- Fira Code font for code typography
-- Python's AST module for syntax validation
-- Inspired by VSCode's interactive features
-
-## 📞 Support
-
-For issues or questions:
-1. Check the troubleshooting section in documentation
-2. Review QUICK_START.md for common issues
-3. Check INTERACTION_FEATURES.md for feature details
-4. Test with the provided examples
-5. Open browser console to check for JavaScript errors
-
-## 🎯 Version History
-
-- **v2.2.0** (December 2024) - Delight & Micro-Interactions Update ✨
-  - Welcome Screen with animated logo and shortcuts
-  - Enhanced Toast Notifications with progress bars
-  - Command Execution Progress Bar with gradient
-  - Success/Error Visual Cues (checkmarks, error flash)
-  - Button Ripple Effects (Material Design)
-  - 15+ CSS animations (focus pulse, shake, flicker, etc.)
-  - Input focus glow animations
-  - Long command completion notifications
-  - ~500 lines of CSS animations
-  - ~200 lines of JavaScript
-  - Complete Phase 4 documentation (DELIGHT_FEATURES.md)
-
-- **v2.1.0** (December 2024) - Visualization & Productivity Update
-  - Enhanced Variable Explorer with expandable objects
-  - Execution Stats Panel (time, memory, count)
-  - Command History Panel with search and re-run
-  - Output Renderer foundation (ready for DataFrames, charts, JSON)
-  - ~350 lines of new code
-  - Complete Phase 3 documentation
-
-- **v2.0.0** (December 2024) - Interactive Features Update
-  - Added Autocomplete & IntelliSense
-  - Added Command Palette (Ctrl+Shift+P)
-  - Added Smart Error Hints
-  - Added Hover Documentation
-  - Added Signature Help (Shift+Tab)
-  - Added comprehensive keyboard shortcuts
-  - ~997 lines of new code
-  - Complete documentation suite
-
-- **v1.0.0** - Visual Design Update
-  - 5 professional themes
-  - Custom terminal prompts
-  - Color-coded output labels
-  - Fira Code typography
-
----
-
-**Happy Coding! 🎉✨**
+If you want any part of this README expanded (examples, code snippets, or a Docker setup), tell me which area to expand and I'll add it.
